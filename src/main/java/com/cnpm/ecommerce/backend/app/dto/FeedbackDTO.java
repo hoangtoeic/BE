@@ -1,17 +1,23 @@
 package com.cnpm.ecommerce.backend.app.dto;
 
 import com.cnpm.ecommerce.backend.app.entity.Product;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import javax.validation.constraints.NotNull;
+
+@JsonIgnoreProperties({"product", "customerDTO"})
 public class FeedbackDTO extends AbstractDTO{
 
     private int rating;
 
     private Product product;
 
+    @NotNull(message = "Please input product id")
     private Long productId;
 
     private CustomerDTO customerDTO;
 
+    @NotNull(message = "Please input customer id")
     private Long customerId;
 
     public int getRating() {

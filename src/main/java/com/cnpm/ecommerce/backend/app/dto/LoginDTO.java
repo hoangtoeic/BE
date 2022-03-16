@@ -1,9 +1,13 @@
 package com.cnpm.ecommerce.backend.app.dto;
 
+import javax.validation.constraints.NotNull;
+
 public class LoginDTO {
 
+    @NotNull(message = "is required")
     private String userName;
 
+    @NotNull(message = "is required")
     private String password;
 
     public LoginDTO() {

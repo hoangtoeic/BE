@@ -11,7 +11,7 @@ import com.cnpm.ecommerce.backend.app.validation.ValidUsername;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
 
-@JsonIgnoreProperties({"role", "roleCode", "feedbacks" })
+@JsonIgnoreProperties({"role", "roleCode", "feedbacks", "provider" })
 public class CustomerDTO extends AbstractDTO{
 
     @ValidUsername
