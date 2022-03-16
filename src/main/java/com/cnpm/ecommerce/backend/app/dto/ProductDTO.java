@@ -1,10 +1,12 @@
 package com.cnpm.ecommerce.backend.app.dto;
 
 import com.cnpm.ecommerce.backend.app.entity.Category;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
+@JsonIgnoreProperties({"category"})
 public class ProductDTO extends AbstractDTO {
 
     @NotNull(message = "Please enter name")
@@ -26,6 +28,7 @@ public class ProductDTO extends AbstractDTO {
 
     private Category category;
 
+    @NotNull(message = "Please select category")
     private Long categoryId;
 
     public String getName() {
