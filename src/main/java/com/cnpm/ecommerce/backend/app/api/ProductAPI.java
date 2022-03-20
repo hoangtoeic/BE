@@ -44,6 +44,8 @@ public class ProductAPI {
                     productPage = productService.findByNameContaining(productName, pagingSort);
                 } else if(productName == null) {
                     productPage = productService.findByCategoryIdPageAndSort(categoryId, pagingSort);
+                } else {
+                    productPage = productService.findByNameContainingAndCategoryIdPageSort(productName, categoryId, pagingSort);
                 }
 
             }
