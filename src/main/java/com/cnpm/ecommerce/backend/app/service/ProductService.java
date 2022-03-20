@@ -152,4 +152,21 @@ public class ProductService implements IProductService{
             return  productPage;
         }
     }
+
+    @Override
+    public Page<Product> findByNameContainingAndCategoryIdPageSort(String productName, Long categoryId, Pageable pagingSort) {
+        Category category = categoryService.findById(categoryId);
+
+        if(category == null){
+            throw  new ResourceNotFoundException("Not found category with ID= " + categoryId);
+        } else {
+
+            Page<Product> productPage =  productRepository.findByNameContainingIgnoreCaseAndCategoryId(productName, categoryId, pagingSort);
+
+            for(Product product : productPage.getContent()) {
+                product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
+            }
+            return  productPage;
+        }
+    }
 }
