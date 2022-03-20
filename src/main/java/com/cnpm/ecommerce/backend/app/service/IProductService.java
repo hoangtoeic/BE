@@ -28,4 +28,6 @@ public interface IProductService {
     Long count();
 
     Page<Product> findByCategoryIdPageAndSort(Long categoryId, Pageable pagingSort);
+
+    Page<Product> findByNameContainingAndCategoryIdPageSort(String productName, Long categoryId, Pageable pagingSort);
 }
