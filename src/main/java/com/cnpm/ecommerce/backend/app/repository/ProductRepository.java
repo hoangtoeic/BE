@@ -22,4 +22,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByCategoryId(Long id, Pageable pageable);
 
     Page<Product> findByNameContainingIgnoreCaseAndCategoryId(String productName, Long categoryId, Pageable pagingSort);
+
+    @Query("SELECT count(p) from Product p WHERE p.category.id=?1")
+    Long countProductsByCategoryId(Long categoryId);
 }

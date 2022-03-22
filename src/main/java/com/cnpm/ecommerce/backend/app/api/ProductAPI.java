@@ -98,4 +98,9 @@ public class ProductAPI {
         return new ResponseEntity<>(productService.count(), HttpStatus.OK);
     }
 
+    @GetMapping("/count/{categoryId}")
+    public ResponseEntity<?> countProductsByCategoryId(@PathVariable("categoryId") Long theCategoryId) {
+        return new ResponseEntity<>(productService.countProductsByCategoryId(theCategoryId), HttpStatus.OK);
+    }
+
 }
