@@ -169,4 +169,16 @@ public class ProductService implements IProductService{
             return  productPage;
         }
     }
+
+    @Override
+    public Long countProductsByCategoryId(Long theCategoryId) {
+
+        Category category = categoryService.findById(theCategoryId);
+
+        if(category == null){
+            throw  new ResourceNotFoundException("Not found category with ID= " + theCategoryId);
+        } else {
+            return productRepository.countProductsByCategoryId(theCategoryId);
+        }
+    }
 }
