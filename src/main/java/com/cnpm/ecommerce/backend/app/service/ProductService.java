@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Base64Utils;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -118,7 +119,6 @@ public class ProductService implements IProductService{
 
     }
 
-
     @Override
     public Page<Product> findByNameContaining(String productName, Pageable pagingSort) {
 
@@ -135,40 +135,8 @@ public class ProductService implements IProductService{
         return productRepository.count();
     }
 
-    @Override
-    public Page<Product> findByCategoryIdPageAndSort(Long categoryId, Pageable pagingSort) {
 
-        Category category = categoryService.findById(categoryId);
 
-        if(category == null){
-            throw  new ResourceNotFoundException("Not found category with ID= " + categoryId);
-        } else {
-
-            Page<Product> productPage =  productRepository.findByCategoryId(categoryId, pagingSort);
-
-            for(Product product : productPage.getContent()) {
-                product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
-            }
-            return  productPage;
-        }
-    }
-
-    @Override
-    public Page<Product> findByNameContainingAndCategoryIdPageSort(String productName, Long categoryId, Pageable pagingSort) {
-        Category category = categoryService.findById(categoryId);
-
-        if(category == null){
-            throw  new ResourceNotFoundException("Not found category with ID= " + categoryId);
-        } else {
-
-            Page<Product> productPage =  productRepository.findByNameContainingIgnoreCaseAndCategoryId(productName, categoryId, pagingSort);
-
-            for(Product product : productPage.getContent()) {
-                product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
-            }
-            return  productPage;
-        }
-    }
 
     @Override
     public Long countProductsByCategoryId(Long theCategoryId) {
@@ -179,6 +147,34 @@ public class ProductService implements IProductService{
             throw  new ResourceNotFoundException("Not found category with ID= " + theCategoryId);
         } else {
             return productRepository.countProductsByCategoryId(theCategoryId);
+        }
+    }
+
+    @Override
+    public Page<Product> findByNameContainingAndPriceAndBrandPageAndSort(String productName, BigDecimal priceGTE, BigDecimal priceLTE, String brand, Pageable pagingSort) {
+        Page<Product> productPage =  productRepository.findByNameContainingIgnoreCaseAndPriceGreaterThanEqualAndPriceLessThanEqualAndBrandContainingIgnoreCase(productName, priceGTE, priceLTE, brand, pagingSort);
+
+        for(Product product : productPage.getContent()) {
+            product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
+        }
+        return  productPage;
+    }
+
+    @Override
+    public Page<Product> findByNameContainingAndCategoryIdAndPriceAndBrandPageSort(String productName, Long categoryId, BigDecimal priceGTE, BigDecimal priceLTE, String brand, Pageable pagingSort) {
+        Category category = categoryService.findById(categoryId);
+
+        if(category == null){
+            throw  new ResourceNotFoundException("Not found category with ID= " + categoryId);
+        } else {
+
+            Page<Product> productPage =  productRepository.findByNameContainingIgnoreCaseAndCategoryIdAndPriceGreaterThanEqualAndPriceLessThanEqualAndBrandContainingIgnoreCase
+                    (productName, categoryId, priceGTE, priceLTE, brand, pagingSort);
+
+            for(Product product : productPage.getContent()) {
+                product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
+            }
+            return  productPage;
         }
     }
 }
