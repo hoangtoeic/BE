@@ -14,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,8 +27,11 @@ public class ProductAPI {
     private IProductService productService;
 
     @GetMapping("")
-    public ResponseEntity<List<Product>> findAll( @RequestParam(name = "q", required = false) String productName,
+    public ResponseEntity<?> findAll( @RequestParam(name = "q", required = false) String productName,
                                                   @RequestParam(name = "categoryId", required = false) Long categoryId,
+                                                  @RequestParam(name = "price_gte", required = false) BigDecimal priceGTE,
+                                                  @RequestParam(name = "price_lte", required = false) BigDecimal priceLTE,
+                                                  @RequestParam(name = "brand", required = false) String brand,
                                                   @RequestParam(defaultValue = "0") int page,
                                                   @RequestParam(defaultValue = "20") int limit,
                                                   @RequestParam(defaultValue = "id,ASC") String[] sort){
@@ -37,20 +41,22 @@ public class ProductAPI {
             Pageable pagingSort = CommonUtils.sortItem(page, limit, sort);
             Page<Product> productPage = null;
 
-            if(productName == null && categoryId == null) {
+            if(productName == null && categoryId == null && priceGTE == null && priceLTE == null && brand == null) {
                 productPage = productService.findAllPageAndSort(pagingSort);
             } else {
+                productName = (productName == null ? "" : productName);
+                priceGTE = (priceGTE == null ? BigDecimal.ZERO : priceGTE);
+                priceLTE = (priceLTE == null ? BigDecimal.valueOf(1000000000) : priceLTE);
+                brand = (brand == null ? "" : brand);
                 if(categoryId == null) {
-                    productPage = productService.findByNameContaining(productName, pagingSort);
-                } else if(productName == null) {
-                    productPage = productService.findByCategoryIdPageAndSort(categoryId, pagingSort);
+                    productPage = productService.findByNameContainingAndPriceAndBrandPageAndSort(productName, priceGTE, priceLTE, brand, pagingSort);
                 } else {
-                    productPage = productService.findByNameContainingAndCategoryIdPageSort(productName, categoryId, pagingSort);
+                    productPage = productService.findByNameContainingAndCategoryIdAndPriceAndBrandPageSort(productName, categoryId, priceGTE, priceLTE, brand, pagingSort);
                 }
-
             }
 
-            return new ResponseEntity<>(productPage.getContent(), HttpStatus.OK);
+
+            return new ResponseEntity<>(productPage, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }

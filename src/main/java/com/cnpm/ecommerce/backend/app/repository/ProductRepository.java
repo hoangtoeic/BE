@@ -5,7 +5,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.security.core.parameters.P;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -19,10 +21,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
-    Page<Product> findByCategoryId(Long id, Pageable pageable);
-
-    Page<Product> findByNameContainingIgnoreCaseAndCategoryId(String productName, Long categoryId, Pageable pagingSort);
-
     @Query("SELECT count(p) from Product p WHERE p.category.id=?1")
     Long countProductsByCategoryId(Long categoryId);
+
+    Page<Product> findByNameContainingIgnoreCaseAndCategoryIdAndPriceGreaterThanEqualAndPriceLessThanEqualAndBrandContainingIgnoreCase(
+            String productName, Long categoryId, BigDecimal priceGTE, BigDecimal priceLTE, String brand, Pageable pagingSort);
+
+    Page<Product> findByNameContainingIgnoreCaseAndPriceGreaterThanEqualAndPriceLessThanEqualAndBrandContainingIgnoreCase(
+            String productName, BigDecimal priceGTE, BigDecimal priceLTE, String brand, Pageable pagingSort);
 }
