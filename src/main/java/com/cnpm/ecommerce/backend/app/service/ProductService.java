@@ -5,6 +5,7 @@ import com.cnpm.ecommerce.backend.app.dto.ProductDTO;
 import com.cnpm.ecommerce.backend.app.entity.Category;
 import com.cnpm.ecommerce.backend.app.entity.Product;
 import com.cnpm.ecommerce.backend.app.exception.ResourceNotFoundException;
+import com.cnpm.ecommerce.backend.app.repository.BrandRepository;
 import com.cnpm.ecommerce.backend.app.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -29,6 +30,9 @@ public class ProductService implements IProductService{
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private BrandService brandService;
 
     @Override
     public List<Product> findAll() {
@@ -76,6 +80,7 @@ public class ProductService implements IProductService{
         theProduct.setThumbnailArr(Base64Utils.decodeFromString(theProductDto.getThumbnail()));
         theProduct.setUnitInStock(theProductDto.getUnitInStock());
         theProduct.setCategory(categoryService.findById(theProductDto.getCategoryId()));
+        theProduct.setBrandEntity(brandService.findByName(theProductDto.getBrand()));
         theProduct.setCreatedDate(new Date());
         theProduct.setCreatedBy(theProductDto.getCreatedBy());
 
@@ -100,6 +105,7 @@ public class ProductService implements IProductService{
             theProduct.get().setThumbnailArr(Base64Utils.decodeFromString(theProductDto.getThumbnail()));
             theProduct.get().setUnitInStock(theProductDto.getUnitInStock());
             theProduct.get().setCategory(categoryService.findById(theProductDto.getCategoryId()));
+            theProduct.get().setBrandEntity(brandService.findByName(theProductDto.getBrand()));
             theProduct.get().setModifiedDate(new Date());
             theProduct.get().setModifiedBy(theProductDto.getModifiedBy());
 

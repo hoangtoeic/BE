@@ -8,7 +8,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "product")
-@JsonIgnoreProperties({"feedbacks", "thumbnailArr", "category"})
+@JsonIgnoreProperties({"feedbacks", "thumbnailArr", "category", "brandEntity"})
 public class Product extends BaseEntity{
 
     @Column(name = "name", nullable = false)
@@ -40,6 +40,11 @@ public class Product extends BaseEntity{
     @JoinColumn(name = "category_id")
     @JsonIgnoreProperties("products")
     private Category category;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "brand_id")
+    @JsonIgnoreProperties("products")
+    private Brand brandEntity;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
     @JsonIgnoreProperties("product")
@@ -120,4 +125,12 @@ public class Product extends BaseEntity{
     public void setThumbnail(String thumbnail) {
         this.thumbnail = thumbnail;
     }
+
+    public Brand getBrandEntity() { return brandEntity; }
+
+    public void setBrandEntity(Brand brandEntity) { this.brandEntity = brandEntity; }
+
+    public Set<Feedback> getFeedbacks() { return feedbacks; }
+
+    public void setFeedbacks(Set<Feedback> feedbacks) { this.feedbacks = feedbacks; }
 }

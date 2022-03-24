@@ -26,7 +26,7 @@ public class EmployeeAPI {
     private IUserService employeeService;
 
     @GetMapping("")
-    public ResponseEntity<List<User>> findAll(@RequestParam(name = "q", required = false) String userName,
+    public ResponseEntity<Page<User>> findAll(@RequestParam(name = "q", required = false) String userName,
                                               @RequestParam(defaultValue = "0") int page,
                                               @RequestParam(defaultValue = "20") int limit,
                                               @RequestParam(defaultValue = "id,ASC") String[] sort){
@@ -42,7 +42,7 @@ public class EmployeeAPI {
                 employeePage = employeeService.findByUserNameContainingEmployee(userName, pagingSort);
             }
 
-            return new ResponseEntity<>(employeePage.getContent(), HttpStatus.OK);
+            return new ResponseEntity<>(employeePage, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
