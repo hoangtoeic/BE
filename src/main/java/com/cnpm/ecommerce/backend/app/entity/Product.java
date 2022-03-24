@@ -1,6 +1,7 @@
 package com.cnpm.ecommerce.backend.app.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -51,7 +52,8 @@ public class Product extends BaseEntity{
     Set<Feedback> feedbacks;
 
     @Transient
-    private Long categoryId;
+    @JsonProperty(value = "categoryId")
+    private Long categoryIds;
 
     public String getName() {
         return name;
@@ -137,7 +139,7 @@ public class Product extends BaseEntity{
 
     public void setFeedbacks(Set<Feedback> feedbacks) { this.feedbacks = feedbacks; }
 
-    public Long getCategoryId() { return categoryId; }
+    public Long getCategoryIds() { return categoryIds; }
 
-    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+    public void setCategoryIds(Long categoryIds) { this.categoryIds = categoryIds; }
 }
