@@ -40,6 +40,7 @@ public class ProductService implements IProductService{
         List<Product> products = productRepository.findAll();
         for(Product product : products) {
             product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
+            product.setCategoryId(product.getCategory().getId());
         }
 
         return products;
@@ -51,6 +52,7 @@ public class ProductService implements IProductService{
 
         for(Product product : productPage.getContent()) {
             product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
+            product.setCategoryId(product.getCategory().getId());
         }
         return  productPage;
     }
@@ -62,6 +64,7 @@ public class ProductService implements IProductService{
             throw  new ResourceNotFoundException("Not found product with ID=" + theId);
         } else {
             product.get().setThumbnail(Base64Utils.encodeToString(product.get().getThumbnailArr()));
+            product.get().setCategoryId(product.get().getCategory().getId());
             return product.get();
         }
 
@@ -132,6 +135,7 @@ public class ProductService implements IProductService{
 
         for(Product product : productPage.getContent()) {
             product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
+            product.setCategoryId(product.getCategory().getId());
         }
         return  productPage;
     }
@@ -162,6 +166,7 @@ public class ProductService implements IProductService{
 
         for(Product product : productPage.getContent()) {
             product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
+            product.setCategoryId(product.getCategory().getId());
         }
         return  productPage;
     }
@@ -179,6 +184,7 @@ public class ProductService implements IProductService{
 
             for(Product product : productPage.getContent()) {
                 product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
+                product.setCategoryId(product.getCategory().getId());
             }
             return  productPage;
         }
