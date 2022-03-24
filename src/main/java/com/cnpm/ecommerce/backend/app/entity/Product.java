@@ -50,6 +50,9 @@ public class Product extends BaseEntity{
     @JsonIgnoreProperties("product")
     Set<Feedback> feedbacks;
 
+    @Transient
+    private Long categoryId;
+
     public String getName() {
         return name;
     }
@@ -133,4 +136,8 @@ public class Product extends BaseEntity{
     public Set<Feedback> getFeedbacks() { return feedbacks; }
 
     public void setFeedbacks(Set<Feedback> feedbacks) { this.feedbacks = feedbacks; }
+
+    public Long getCategoryId() { return categoryId; }
+
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
 }
