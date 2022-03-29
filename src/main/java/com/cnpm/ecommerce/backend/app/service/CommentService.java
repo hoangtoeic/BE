@@ -7,6 +7,7 @@ import com.cnpm.ecommerce.backend.app.entity.Comment;
 import com.cnpm.ecommerce.backend.app.entity.Product;
 import com.cnpm.ecommerce.backend.app.exception.ResourceNotFoundException;
 import com.cnpm.ecommerce.backend.app.repository.CommentRepository;
+import com.cnpm.ecommerce.backend.app.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,8 @@ public class CommentService implements ICommentService {
     @Autowired
     private IProductService productService;
 
+
+
     @Autowired
     private CommentRepository commentRepository;
 
@@ -38,7 +41,7 @@ public class CommentService implements ICommentService {
         Comment theComment = new Comment();
 
         theComment.setComment((theCommentDTO.getComment()));
-        theComment.setUser(customerService.findByIdCustomer(theCommentDTO.getCustomerId()));
+        theComment.setCustomer(customerService.findByIdCustomer(theCommentDTO.getCustomerId()));
         theComment.setProduct(productService.findById(theCommentDTO.getProductId()));
         theComment.setCreatedDate(new Date());
         theComment.setCreatedBy("");
@@ -56,15 +59,21 @@ public class CommentService implements ICommentService {
     public Page<Comment> findByProductIdPageAndSort(Long productId, Pageable pagingSort) {
         Product product = productService.findById(productId);
         Page<Comment> commentPage = commentRepository.findByProductId(productId, pagingSort);
+
         if (product == null) {
             throw new ResourceNotFoundException("Not found product with ID= " + productId);
         } else {
 
-
-            for(Comment comment : commentPage.getContent()) {
-                comment.setProduct_id(comment.getProduct().getId());
-                comment.setUser_id(comment.getUser().getId());
+            try {
+                for(Comment comment : commentPage.getContent()) {
+                    comment.setProductIds(comment.getProduct().getId());
+                    comment.setCustomerIds(comment.getCustomer().getId());
+                }
+                }
+            catch (Exception e) {
+                e.printStackTrace();
             }
+
             return  commentPage;
         }
 
