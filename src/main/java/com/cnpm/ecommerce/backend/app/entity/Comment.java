@@ -14,6 +14,28 @@ public class Comment extends BaseEntity {
     @Column(name = "comment")
     private String comment;
 
+    public Long getProduct_id() {
+        return product_id;
+    }
+
+    public void setProduct_id(Long product_id) {
+        this.product_id = product_id;
+    }
+
+    public Long getUser_id() {
+        return user_id;
+    }
+
+    public void setUser_id(Long user_id) {
+        this.user_id = user_id;
+    }
+
+    @Transient
+    private Long product_id;
+
+    @Transient
+    private Long user_id;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id")
     private Product product;
