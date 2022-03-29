@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Base64Utils;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -54,13 +55,19 @@ public class CommentService implements ICommentService {
     @Override
     public Page<Comment> findByProductIdPageAndSort(Long productId, Pageable pagingSort) {
         Product product = productService.findById(productId);
-
+        Page<Comment> commentPage = commentRepository.findByProductId(productId, pagingSort);
         if (product == null) {
             throw new ResourceNotFoundException("Not found product with ID= " + productId);
         } else {
-            return commentRepository.findByProductId(productId, pagingSort);
 
+
+            for(Comment comment : commentPage.getContent()) {
+                comment.setProduct_id(comment.getProduct().getId());
+                comment.setUser_id(comment.getUser().getId());
+            }
+            return  commentPage;
         }
+
 
     }
 }
