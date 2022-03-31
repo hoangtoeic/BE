@@ -5,6 +5,7 @@ import com.cnpm.ecommerce.backend.app.dto.ProductDTO;
 import com.cnpm.ecommerce.backend.app.entity.Category;
 import com.cnpm.ecommerce.backend.app.entity.Product;
 import com.cnpm.ecommerce.backend.app.exception.ResourceNotFoundException;
+import com.cnpm.ecommerce.backend.app.repository.BrandRepository;
 import com.cnpm.ecommerce.backend.app.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Base64Utils;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -29,12 +31,16 @@ public class ProductService implements IProductService{
     @Autowired
     private CategoryService categoryService;
 
+    @Autowired
+    private BrandService brandService;
+
     @Override
     public List<Product> findAll() {
 
         List<Product> products = productRepository.findAll();
         for(Product product : products) {
             product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
+            product.setCategoryIds(product.getCategory().getId());
         }
 
         return products;
@@ -46,6 +52,7 @@ public class ProductService implements IProductService{
 
         for(Product product : productPage.getContent()) {
             product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
+            product.setCategoryIds(product.getCategory().getId());
         }
         return  productPage;
     }
@@ -57,6 +64,7 @@ public class ProductService implements IProductService{
             throw  new ResourceNotFoundException("Not found product with ID=" + theId);
         } else {
             product.get().setThumbnail(Base64Utils.encodeToString(product.get().getThumbnailArr()));
+            product.get().setCategoryIds(product.get().getCategory().getId());
             return product.get();
         }
 
@@ -75,6 +83,7 @@ public class ProductService implements IProductService{
         theProduct.setThumbnailArr(Base64Utils.decodeFromString(theProductDto.getThumbnail()));
         theProduct.setUnitInStock(theProductDto.getUnitInStock());
         theProduct.setCategory(categoryService.findById(theProductDto.getCategoryId()));
+        theProduct.setBrandEntity(brandService.findByName(theProductDto.getBrand()));
         theProduct.setCreatedDate(new Date());
         theProduct.setCreatedBy(theProductDto.getCreatedBy());
 
@@ -99,6 +108,7 @@ public class ProductService implements IProductService{
             theProduct.get().setThumbnailArr(Base64Utils.decodeFromString(theProductDto.getThumbnail()));
             theProduct.get().setUnitInStock(theProductDto.getUnitInStock());
             theProduct.get().setCategory(categoryService.findById(theProductDto.getCategoryId()));
+            theProduct.get().setBrandEntity(brandService.findByName(theProductDto.getBrand()));
             theProduct.get().setModifiedDate(new Date());
             theProduct.get().setModifiedBy(theProductDto.getModifiedBy());
 
@@ -118,7 +128,6 @@ public class ProductService implements IProductService{
 
     }
 
-
     @Override
     public Page<Product> findByNameContaining(String productName, Pageable pagingSort) {
 
@@ -126,6 +135,7 @@ public class ProductService implements IProductService{
 
         for(Product product : productPage.getContent()) {
             product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
+            product.setCategoryIds(product.getCategory().getId());
         }
         return  productPage;
     }
@@ -135,38 +145,55 @@ public class ProductService implements IProductService{
         return productRepository.count();
     }
 
-    @Override
-    public Page<Product> findByCategoryIdPageAndSort(Long categoryId, Pageable pagingSort) {
 
-        Category category = categoryService.findById(categoryId);
+
+
+    @Override
+    public Long countProductsByCategoryId(Long theCategoryId) {
+
+        Category category = categoryService.findById(theCategoryId);
 
         if(category == null){
-            throw  new ResourceNotFoundException("Not found category with ID= " + categoryId);
+            throw  new ResourceNotFoundException("Not found category with ID= " + theCategoryId);
         } else {
-
-            Page<Product> productPage =  productRepository.findByCategoryId(categoryId, pagingSort);
-
-            for(Product product : productPage.getContent()) {
-                product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
-            }
-            return  productPage;
+            return productRepository.countProductsByCategoryId(theCategoryId);
         }
     }
 
     @Override
-    public Page<Product> findByNameContainingAndCategoryIdPageSort(String productName, Long categoryId, Pageable pagingSort) {
+    public Page<Product> findByNameContainingAndPriceAndBrandPageAndSort(String productName, BigDecimal priceGTE, BigDecimal priceLTE, String brand, Pageable pagingSort) {
+        Page<Product> productPage =  productRepository.findByNameContainingIgnoreCaseAndPriceGreaterThanEqualAndPriceLessThanEqualAndBrandContainingIgnoreCase(productName, priceGTE, priceLTE, brand, pagingSort);
+
+        for(Product product : productPage.getContent()) {
+            product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
+            product.setCategoryIds(product.getCategory().getId());
+        }
+        return  productPage;
+    }
+
+    @Override
+    public Page<Product> findByNameContainingAndCategoryIdAndPriceAndBrandPageSort(String productName, Long categoryId, BigDecimal priceGTE, BigDecimal priceLTE, String brand, Pageable pagingSort) {
         Category category = categoryService.findById(categoryId);
 
         if(category == null){
             throw  new ResourceNotFoundException("Not found category with ID= " + categoryId);
         } else {
+            try{
+                Page<Product> productPage =  productRepository.findByNameContainingIgnoreCaseAndCategoryIdAndPriceGreaterThanEqualAndPriceLessThanEqualAndBrandContainingIgnoreCase
+                        (productName, categoryId, priceGTE, priceLTE, brand, pagingSort);
 
-            Page<Product> productPage =  productRepository.findByNameContainingIgnoreCaseAndCategoryId(productName, categoryId, pagingSort);
+                for(Product product : productPage.getContent()) {
+                    product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
+                    product.setCategoryIds(categoryId);
+                }
+                return  productPage;
 
-            for(Product product : productPage.getContent()) {
-                product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
             }
-            return  productPage;
+
+
         }
     }
 }
