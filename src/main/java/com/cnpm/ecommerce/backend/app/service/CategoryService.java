@@ -55,7 +55,11 @@ public class CategoryService implements ICategoryService{
         theCategory.setCreatedBy(theCategoryDto.getCreatedBy());
         theCategory.setName(theCategoryDto.getName());
         theCategory.setDescription(theCategoryDto.getDescription());
-        theCategory.setThumbnailArr(Base64Utils.decodeFromString(theCategoryDto.getThumbnail()));
+        if(theCategoryDto.getThumbnail() != null) {
+            theCategory.setThumbnailArr(Base64Utils.decodeFromString(theCategoryDto.getThumbnail()));
+        } else {
+            theCategory.setThumbnailArr(new byte[0]);
+        }
 
         categoryRepository.save(theCategory);
 
@@ -80,7 +84,11 @@ public class CategoryService implements ICategoryService{
             theCategory.get().setModifiedBy(theCategoryDto.getModifiedBy());
             theCategory.get().setName(theCategoryDto.getName());
             theCategory.get().setDescription(theCategoryDto.getDescription());
-            theCategory.get().setThumbnailArr(Base64Utils.decodeFromString(theCategoryDto.getThumbnail()));
+            if(theCategoryDto.getThumbnail() != null) {
+                theCategory.get().setThumbnailArr(Base64Utils.decodeFromString(theCategoryDto.getThumbnail()));
+            } else {
+                theCategory.get().setThumbnailArr(new byte[0]);
+            }
 
             categoryRepository.save(theCategory.get());
         }

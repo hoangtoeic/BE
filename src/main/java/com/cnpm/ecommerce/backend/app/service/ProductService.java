@@ -80,7 +80,11 @@ public class ProductService implements IProductService{
         theProduct.setShortDescription(theProductDto.getShortDescription());
         theProduct.setDescription(theProductDto.getDescription());
         theProduct.setPrice(theProductDto.getPrice());
-        theProduct.setThumbnailArr(Base64Utils.decodeFromString(theProductDto.getThumbnail()));
+        if(theProductDto.getThumbnail() != null) {
+            theProduct.setThumbnailArr(Base64Utils.decodeFromString(theProductDto.getThumbnail()));
+        } else {
+            theProduct.setThumbnailArr(new byte[0]);
+        }
         theProduct.setUnitInStock(theProductDto.getUnitInStock());
         theProduct.setCategory(categoryService.findById(theProductDto.getCategoryId()));
         theProduct.setBrandEntity(brandService.findByName(theProductDto.getBrand()));
@@ -105,7 +109,11 @@ public class ProductService implements IProductService{
             theProduct.get().setShortDescription(theProductDto.getShortDescription());
             theProduct.get().setDescription(theProductDto.getDescription());
             theProduct.get().setPrice(theProductDto.getPrice());
-            theProduct.get().setThumbnailArr(Base64Utils.decodeFromString(theProductDto.getThumbnail()));
+            if(theProductDto.getThumbnail() != null) {
+                theProduct.get().setThumbnailArr(Base64Utils.decodeFromString(theProductDto.getThumbnail()));
+            } else {
+                theProduct.get().setThumbnailArr(new byte[0]);
+            }
             theProduct.get().setUnitInStock(theProductDto.getUnitInStock());
             theProduct.get().setCategory(categoryService.findById(theProductDto.getCategoryId()));
             theProduct.get().setBrandEntity(brandService.findByName(theProductDto.getBrand()));
