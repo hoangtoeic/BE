@@ -94,7 +94,11 @@ public class UserService implements IUserService {
             theEmployee.setPhoneNumber(theEmployeeDto.getPhoneNumber());
             theEmployee.setAddress(theEmployeeDto.getAddress());
             theEmployee.setGender(theEmployeeDto.getGender());
-            theEmployee.setProfilePictureArr(Base64Utils.decodeFromString(theEmployeeDto.getProfilePicture()));
+            if(theEmployeeDto.getProfilePicture() != null ) {
+                theEmployee.setProfilePictureArr(Base64Utils.decodeFromString(theEmployeeDto.getProfilePicture()));
+            } else {
+                theEmployee.setProfilePictureArr(new byte[0]);
+            }
             theEmployee.setEnabled(1);
             theEmployee.setAccCustomer(false);
 
@@ -114,7 +118,7 @@ public class UserService implements IUserService {
 
             userRepository.save(theEmployee);
 
-            return new MessageResponse("Create employee successfully!", HttpStatus.ACCEPTED, LocalDateTime.now());
+            return new MessageResponse("Create employee successfully!", HttpStatus.CREATED, LocalDateTime.now());
         }
     }
 
@@ -132,7 +136,11 @@ public class UserService implements IUserService {
             theEmployee.get().setPhoneNumber(theEmployeeDto.getPhoneNumber());
             theEmployee.get().setAddress(theEmployeeDto.getAddress());
             theEmployee.get().setGender(theEmployeeDto.getGender());
-            theEmployee.get().setProfilePictureArr(Base64Utils.decodeFromString(theEmployeeDto.getProfilePicture()));
+            if(theEmployeeDto.getProfilePicture() != null ) {
+                theEmployee.get().setProfilePictureArr(Base64Utils.decodeFromString(theEmployeeDto.getProfilePicture()));
+            }else {
+                theEmployee.get().setProfilePictureArr(new byte[0]);
+            }
             theEmployee.get().setAccCustomer(false);
 
             Set<Role> roles;
@@ -245,7 +253,11 @@ public class UserService implements IUserService {
             theCustomer.setPhoneNumber(theCustomerDto.getPhoneNumber());
             theCustomer.setAddress(theCustomerDto.getAddress());
             theCustomer.setGender(theCustomerDto.getGender());
-            theCustomer.setProfilePictureArr(Base64Utils.decodeFromString(theCustomerDto.getProfilePicture()));
+            if(theCustomerDto.getProfilePicture() != null ) {
+                theCustomer.setProfilePictureArr(Base64Utils.decodeFromString(theCustomerDto.getProfilePicture()));
+            } else {
+                theCustomer.setProfilePictureArr(new byte[0]);
+            }
             theCustomer.setEnabled(1);
             theCustomer.setAccCustomer(true);
             Set<Role> roles = new HashSet<>(Arrays.asList(roleRepository.findByCode("ROLE_CUSTOMER")));
@@ -253,7 +265,7 @@ public class UserService implements IUserService {
 
             userRepository.save(theCustomer);
 
-            return new MessageResponse("Create customer successfully!", HttpStatus.ACCEPTED, LocalDateTime.now());
+            return new MessageResponse("Create customer successfully!", HttpStatus.CREATED, LocalDateTime.now());
         }
 
     }
@@ -272,7 +284,12 @@ public class UserService implements IUserService {
             theCustomer.get().setPhoneNumber(theCustomerDto.getPhoneNumber());
             theCustomer.get().setAddress(theCustomerDto.getAddress());
             theCustomer.get().setGender(theCustomerDto.getGender());
-            theCustomer.get().setProfilePictureArr(Base64Utils.decodeFromString(theCustomerDto.getProfilePicture()));
+            if(theCustomerDto.getProfilePicture() != null) {
+                theCustomer.get().setProfilePictureArr(Base64Utils.decodeFromString(theCustomerDto.getProfilePicture()));
+            }
+            else {
+                theCustomer.get().setProfilePictureArr(new byte[0]);
+            }
             theCustomer.get().setAccCustomer(true);
 
             userRepository.save(theCustomer.get());

@@ -1,5 +1,7 @@
 package com.cnpm.ecommerce.backend.app.security;
 
+import com.cnpm.ecommerce.backend.app.entity.Blacklist;
+import com.cnpm.ecommerce.backend.app.service.IBlacklistService;
 import com.cnpm.ecommerce.backend.app.service.IUserService;
 import com.cnpm.ecommerce.backend.app.utils.JwtUtils;
 import org.slf4j.Logger;
@@ -17,6 +19,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 
 public class AuthTokenFilter extends OncePerRequestFilter {
@@ -28,6 +31,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 	@Autowired
 	private IUserService userService;
 
+	@Autowired
+	private IBlacklistService  blacklistService;
+
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
@@ -35,7 +41,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 		try {
 			
 			String jwt = parseJwt(request);
-			if(jwt !=null && jwtUtils.validateJwtToken(jwt)) {
+			Optional<Blacklist> blacklist = blacklistService.findByToken(jwt);
+			if(jwt !=null && jwtUtils.validateJwtToken(jwt) && (blacklist.isPresent() == false)) {
 				String username = jwtUtils.getUserNameFromJwtToken(jwt);
 				
 				UserDetails userDetails = userService.loadUserByUsername(username);

@@ -34,6 +34,7 @@ public class CustomerDTO extends AbstractDTO{
     @NotNull(message = "is required")
     private String email;
 
+    @NotNull(message = "is required")
     private int gender;
 
     private String profilePicture;

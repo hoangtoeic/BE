@@ -1,14 +1,14 @@
 package com.cnpm.ecommerce.backend.app.api;
 
-import com.cnpm.ecommerce.backend.app.dto.EmployeeDTO;
-import com.cnpm.ecommerce.backend.app.dto.JwtResponse;
-import com.cnpm.ecommerce.backend.app.dto.LoginDTO;
-import com.cnpm.ecommerce.backend.app.dto.MessageResponse;
+import com.cnpm.ecommerce.backend.app.dto.*;
+import com.cnpm.ecommerce.backend.app.entity.RefreshToken;
+import com.cnpm.ecommerce.backend.app.exception.TokenRefreshException;
+import com.cnpm.ecommerce.backend.app.service.IBlacklistService;
+import com.cnpm.ecommerce.backend.app.service.IRefreshTokenService;
 import com.cnpm.ecommerce.backend.app.service.IUserService;
 import com.cnpm.ecommerce.backend.app.utils.JwtUtils;
 import com.cnpm.ecommerce.backend.app.utils.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,9 +16,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,17 +37,29 @@ public class AuthAdminAPI {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private IRefreshTokenService refreshTokenService;
+
+    @Autowired
+    private IBlacklistService blacklistService;
+
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateEmployee(@Validated @RequestBody LoginDTO loginDto){
+    public ResponseEntity<?> authenticateEmployee(@Valid @RequestBody LoginDTO loginDto, BindingResult theBindingResult){
+
+        if(theBindingResult.hasErrors()) {
+            return new ResponseEntity<MessageResponse>(new MessageResponse("Invalid value for login", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);
+        }
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginDto.getUserName(),
                         loginDto.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtTokenForEmployee(authentication);
+        String jwt = jwtUtils.generateJwtToken(authentication);
 
         UserDetailsImpl employeeDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(employeeDetails.getId());
 
         List<String> roles = employeeDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
@@ -58,14 +70,14 @@ public class AuthAdminAPI {
         }
 
         return ResponseEntity.ok(new JwtResponse(jwt,
+                refreshToken.getToken(),
                 employeeDetails.getId(),
                 employeeDetails.getUsername(),
-                employeeDetails.getEmail(),
-                roles));
+                employeeDetails.getEmail()));
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerEmployee(@Validated @RequestBody EmployeeDTO employeeDto, BindingResult bindingResult){
+    public ResponseEntity<?> registerEmployee(@Valid @RequestBody EmployeeDTO employeeDto, BindingResult bindingResult){
 
         if(bindingResult.hasErrors()){
             return new ResponseEntity<>(new MessageResponse("Invalid value for create employee", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);
@@ -86,6 +98,38 @@ public class AuthAdminAPI {
 
         return  new ResponseEntity<>(messageResponse, messageResponse.getStatus());
 
+    }
+
+    @PostMapping("refreshtoken")
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody TokenRefreshRequest request, BindingResult bindingResult){
+        if(bindingResult.hasErrors()){
+            return new ResponseEntity<>(new MessageResponse("Invalid value.", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);
+        }
+        String refreshToken = request.getRefreshToken();
+
+        return refreshTokenService.findByToken(refreshToken)
+                .map(refreshTokenService::verifyExpiration)
+                .map(RefreshToken::getUser)
+                .map(user -> {
+                    String token = jwtUtils.generateJwtTokenFromUsername(user.getUserName());
+
+                    return ResponseEntity.ok(new JwtResponse(token,
+                            refreshToken,
+                            user.getId(),
+                            user.getUserName(),
+                            user.getEmail()));
+                })
+                .orElseThrow(() -> new TokenRefreshException(refreshToken,"Refresh token isn't in database!"));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@Valid @RequestBody LogoutRequest request, BindingResult bindingResult) {
+        if(bindingResult.hasErrors()){
+            return new ResponseEntity<>(new MessageResponse("Invalid value.", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);
+        }
+
+        MessageResponse messageResponse = blacklistService.addTokenToBlacklist(request);
+        return new ResponseEntity<>(messageResponse, messageResponse.getStatus());
     }
 
 }
