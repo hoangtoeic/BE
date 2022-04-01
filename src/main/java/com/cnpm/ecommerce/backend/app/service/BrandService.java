@@ -55,7 +55,11 @@ public class BrandService implements IBrandService{
         theBrand.setCreatedBy(theBrandDto.getCreatedBy());
         theBrand.setName(theBrandDto.getName());
         theBrand.setDescription(theBrandDto.getDescription());
-        theBrand.setThumbnailArr(Base64Utils.decodeFromString(theBrandDto.getThumbnail()));
+        if(theBrandDto.getThumbnail() != null) {
+            theBrand.setThumbnailArr(Base64Utils.decodeFromString(theBrandDto.getThumbnail()));
+        } else {
+            theBrand.setThumbnailArr(new byte[0]);
+        }
 
         brandRepository.save(theBrand);
 
@@ -80,7 +84,11 @@ public class BrandService implements IBrandService{
             theBrand.get().setModifiedBy(theBrandDto.getModifiedBy());
             theBrand.get().setName(theBrandDto.getName());
             theBrand.get().setDescription(theBrandDto.getDescription());
-            theBrand.get().setThumbnailArr(Base64Utils.decodeFromString(theBrandDto.getThumbnail()));
+            if(theBrandDto.getThumbnail() != null) {
+                theBrand.get().setThumbnailArr(Base64Utils.decodeFromString(theBrandDto.getThumbnail()));
+            } else {
+                theBrand.get().setThumbnailArr(new byte[0]);
+            }
 
             brandRepository.save(theBrand.get());
         }
