@@ -5,12 +5,14 @@ import com.cnpm.ecommerce.backend.app.dto.MessageResponse;
 import com.cnpm.ecommerce.backend.app.entity.User;
 import com.cnpm.ecommerce.backend.app.service.IUserService;
 import com.cnpm.ecommerce.backend.app.utils.CommonUtils;
+import com.cnpm.ecommerce.backend.app.validationgroups.OnUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -68,7 +70,7 @@ public class EmployeeAPI {
 
     @PutMapping("/{id}")
     public ResponseEntity<MessageResponse> updateEmployee(@PathVariable("id") Long theId,
-                                                          @Valid @RequestBody EmployeeDTO theEmployeeDto, BindingResult bindingResult){
+                                                          @Validated(OnUpdate.class)  @RequestBody EmployeeDTO theEmployeeDto, BindingResult bindingResult){
 
         if(bindingResult.hasErrors()){
             return new ResponseEntity<MessageResponse>(new MessageResponse("Invalid value for update employee", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);

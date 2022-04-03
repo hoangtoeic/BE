@@ -8,6 +8,9 @@ public class LogoutRequest {
     private String token;
 
     @NotNull(message = "is required")
+    private String refreshToken;
+
+    @NotNull(message = "is required")
     private Long userId;
 
     public LogoutRequest() {
@@ -20,4 +23,8 @@ public class LogoutRequest {
     public Long getUserId() { return userId; }
 
     public void setUserId(Long userId) { this.userId = userId; }
+
+    public String getRefreshToken() { return refreshToken; }
+
+    public void setRefreshToken(String refreshToken) { this.refreshToken = refreshToken; }
 }

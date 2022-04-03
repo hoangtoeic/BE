@@ -1,20 +1,24 @@
 package com.cnpm.ecommerce.backend.app.service;
 
-import com.cnpm.ecommerce.backend.app.dto.CustomerDTO;
-import com.cnpm.ecommerce.backend.app.dto.EmployeeDTO;
-import com.cnpm.ecommerce.backend.app.dto.MessageResponse;
+import com.cnpm.ecommerce.backend.app.dto.*;
+import com.cnpm.ecommerce.backend.app.entity.PasswordResetToken;
 import com.cnpm.ecommerce.backend.app.entity.Role;
 import com.cnpm.ecommerce.backend.app.entity.User;
 import com.cnpm.ecommerce.backend.app.exception.ResourceNotFoundException;
 import com.cnpm.ecommerce.backend.app.mapper.UserMapper;
+import com.cnpm.ecommerce.backend.app.repository.PasswordResetTokenRepository;
 import com.cnpm.ecommerce.backend.app.repository.RoleRepository;
 import com.cnpm.ecommerce.backend.app.repository.UserRepository;
 import com.cnpm.ecommerce.backend.app.utils.UserDetailsImpl;
+import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -22,6 +26,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Base64Utils;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import java.io.UnsupportedEncodingException;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -38,6 +46,15 @@ public class UserService implements IUserService {
     @Autowired
     @Qualifier("passwordEncoder")
     private BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Value("${bezkoder.app.jwtResetExpirationMs}")
+    private Long resetTokenDurationMs;
 
     @Autowired
     public void setPasswordEncoder(BCryptPasswordEncoder passwordEncoder) {
@@ -348,6 +365,109 @@ public class UserService implements IUserService {
         }
 
         return null;
+    }
+
+    @Override
+    public MessageResponse resetPassword(PasswordResetRequest request, String siteURL) throws MessagingException, UnsupportedEncodingException{
+        Optional<User> user = userRepository.findByEmail(request.getEmail());
+
+        if(user.isPresent()){
+            String randomCode = RandomString.make(64);
+
+            sendResetPasswordEmail(user.get(), siteURL, randomCode);
+
+            PasswordResetToken passwordResetToken = new PasswordResetToken();
+            passwordResetToken.setToken(randomCode);
+            passwordResetToken.setUser(user.get());
+            passwordResetToken.setExpiryDate(Instant.now().plusMillis(resetTokenDurationMs));
+
+            passwordResetTokenRepository.save(passwordResetToken);
+
+            return new MessageResponse("Please check mail to reset password.", HttpStatus.OK, LocalDateTime.now());
+        } else {
+            return new MessageResponse("Email not in database", HttpStatus.NOT_FOUND, LocalDateTime.now());
+        }
+    }
+
+    @Override
+    public MessageResponse changeResetPassword(PasswordResetChangeRequest request) {
+
+        Optional<User> user = userRepository.findByEmail(request.getEmail());
+
+        if(user.isPresent()){
+
+            PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByUserId(user.get().getId());
+
+            if(passwordResetToken != null) {
+                passwordResetTokenRepository.delete(passwordResetToken);
+
+                String encodedPassword = passwordEncoder.encode(request.getPassword());
+                user.get().setPassword(encodedPassword);
+                user.get().setModifiedDate(new Date());
+
+                userRepository.save(user.get());
+                return new MessageResponse("Reset password successfully!", HttpStatus.OK, LocalDateTime.now());
+            } else {
+                return new MessageResponse("Password has been reset.", HttpStatus.BAD_REQUEST, LocalDateTime.now());
+            }
+
+
+        } else {
+            return new MessageResponse("Email not in database", HttpStatus.NOT_FOUND, LocalDateTime.now());
+        }
+    }
+
+    @Override
+    public MessageResponse changePassword(PasswordChangeRequest request) {
+
+        Optional<User> user = userRepository.findByEmail(request.getEmail());
+
+        if(user.isPresent()){
+
+            if(passwordEncoder.matches(request.getOldPassword(), user.get().getPassword())){
+                String encodedPassword = passwordEncoder.encode(request.getPassword());
+                user.get().setPassword(encodedPassword);
+                user.get().setModifiedDate(new Date());
+
+                userRepository.save(user.get());
+
+                return new MessageResponse("Update password successfully!", HttpStatus.OK, LocalDateTime.now());
+            } else {
+                return new MessageResponse("The old password is incorrect!", HttpStatus.BAD_REQUEST, LocalDateTime.now());
+            }
+
+        } else {
+            return new MessageResponse("Email not in database", HttpStatus.NOT_FOUND, LocalDateTime.now());
+        }
+    }
+
+    private void sendResetPasswordEmail(User user, String siteURL, String randomCode) throws MessagingException, UnsupportedEncodingException{
+        String toAddress = user.getEmail();
+        String fromAddress = "cnpmt12022@gmail.com";
+        String senderName = "ABC Store";
+        String subject = "Please confirm to reset password";
+        String content = "Dear [[name]],<br>"
+                + "Please click the link below to reset your password:<br>"
+                + "<h3><a href=\"[[URL]]\" target=\"_self\">RESET</a></h3>"
+                + "Thank you,<br>"
+                + "ABC Store.";
+
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+
+        helper.setFrom(fromAddress, senderName);
+        helper.setTo(toAddress);
+        helper.setSubject(subject);
+
+        content = content.replace("[[name]]", user.getName());
+        String verifyURL = siteURL + "/api/password/confirm?token=" + randomCode;
+
+        content = content.replace("[[URL]]", verifyURL);
+
+        helper.setText(content, true);
+
+        mailSender.send(message);
+
     }
 
     @Override
