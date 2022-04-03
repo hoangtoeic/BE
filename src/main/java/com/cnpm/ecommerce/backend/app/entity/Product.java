@@ -55,6 +55,12 @@ public class Product extends BaseEntity{
     @JsonProperty(value = "categoryId")
     private Long categoryIds;
 
+    @Column(name = "discount")
+    private Integer discount;
+
+    @Column(name = "rating_average")
+    private BigDecimal ratingAverage;
+
     public String getName() {
         return name;
     }
@@ -142,4 +148,12 @@ public class Product extends BaseEntity{
     public Long getCategoryIds() { return categoryIds; }
 
     public void setCategoryIds(Long categoryIds) { this.categoryIds = categoryIds; }
+
+    public Integer getDiscount() { return discount; }
+
+    public void setDiscount(Integer discount) { this.discount = discount; }
+
+    public BigDecimal getRatingAverage() { return ratingAverage; }
+
+    public void setRatingAverage(BigDecimal ratingAverage) { this.ratingAverage = ratingAverage; }
 }
