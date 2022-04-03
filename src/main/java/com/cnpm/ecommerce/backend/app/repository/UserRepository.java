@@ -38,4 +38,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT count(u) FROM User u WHERE u.isAccCustomer=true")
     Long countCustomer();
+
+    Optional<User> findByEmail(String email);
 }
