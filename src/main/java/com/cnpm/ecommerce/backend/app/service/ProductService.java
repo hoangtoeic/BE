@@ -90,6 +90,11 @@ public class ProductService implements IProductService{
         theProduct.setBrandEntity(brandService.findByName(theProductDto.getBrand()));
         theProduct.setCreatedDate(new Date());
         theProduct.setCreatedBy(theProductDto.getCreatedBy());
+        if(theProductDto.getDiscount() == null) {
+            theProduct.setDiscount(0);
+        } else {
+            theProduct.setDiscount(theProductDto.getDiscount());
+        }
 
         productRepository.save(theProduct);
 
@@ -119,6 +124,12 @@ public class ProductService implements IProductService{
             theProduct.get().setBrandEntity(brandService.findByName(theProductDto.getBrand()));
             theProduct.get().setModifiedDate(new Date());
             theProduct.get().setModifiedBy(theProductDto.getModifiedBy());
+
+            if(theProductDto.getDiscount() == null) {
+                theProduct.get().setDiscount(0);
+            } else {
+                theProduct.get().setDiscount(theProductDto.getDiscount());
+            }
 
             productRepository.save(theProduct.get());
         }
