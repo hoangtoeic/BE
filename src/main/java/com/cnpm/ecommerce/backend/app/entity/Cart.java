@@ -1,7 +1,10 @@
 package com.cnpm.ecommerce.backend.app.entity;
 
 
+import com.cnpm.ecommerce.backend.app.enums.OrderStatus;
+import com.cnpm.ecommerce.backend.app.enums.PaymentMethod;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -10,7 +13,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "cart")
+@JsonIgnoreProperties({"user"})
 public class Cart extends BaseEntity{
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
@@ -23,6 +28,16 @@ public class Cart extends BaseEntity{
 
     @Column(name = "address")
     private String address;
+
+    @Column(name = "status")
+    private OrderStatus status;
+
+    @Column(name = "payment_method")
+    private PaymentMethod paymentMethod;
+
+    @Transient
+    @JsonProperty(value = "userId")
+    private Long userIds;
 
     @OneToMany(mappedBy = "cart", orphanRemoval = true, cascade = CascadeType.ALL)
     @JsonIgnoreProperties({"cart"})
@@ -63,4 +78,20 @@ public class Cart extends BaseEntity{
     public void setAddress(String address) {
         this.address = address;
     }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
+
+    public PaymentMethod getPaymentMethod() { return paymentMethod; }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) { this.paymentMethod = paymentMethod; }
+
+    public Long getUserIds() { return userIds; }
+
+    public void setUserIds(Long userIds) { this.userIds = userIds; }
 }

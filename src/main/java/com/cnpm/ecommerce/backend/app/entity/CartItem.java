@@ -2,12 +2,16 @@ package com.cnpm.ecommerce.backend.app.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "cart_item")
+@JsonIgnoreProperties({"product", "cart"})
 public class CartItem extends BaseEntity{
+    
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cart_id")
     @JsonIgnoreProperties({"cartItems"})
@@ -19,10 +23,18 @@ public class CartItem extends BaseEntity{
     private Product product;
 
     @Column(name = "quantity")
-    private int quantity;
+    private Integer quantity;
 
-    @Column(name = "status")
-    private int status;
+    @Column(name = "sale_price")
+    private BigDecimal salePrice;
+
+    @Transient
+    @JsonProperty(value = "cartId")
+    private Long cartIds;
+
+    @Transient
+    @JsonProperty(value = "productId")
+    private Long productIds;
 
 
     public Cart getCart() {
@@ -41,20 +53,23 @@ public class CartItem extends BaseEntity{
         this.product = product;
     }
 
-
-    public int getQuantity() {
+    public Integer getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(Integer quantity) {
         this.quantity = quantity;
     }
 
-    public int getStatus() {
-        return status;
-    }
+    public BigDecimal getSalePrice() { return salePrice; }
 
-    public void setStatus(int status) {
-        this.status = status;
-    }
+    public void setSalePrice(BigDecimal salePrice) { this.salePrice = salePrice; }
+
+    public Long getCartIds() { return cartIds; }
+
+    public void setCartIds(Long cartIds) { this.cartIds = cartIds; }
+
+    public Long getProductIds() { return productIds; }
+
+    public void setProductIds(Long productIds) { this.productIds = productIds; }
 }

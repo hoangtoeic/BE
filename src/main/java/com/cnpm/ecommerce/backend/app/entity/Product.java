@@ -28,7 +28,7 @@ public class Product extends BaseEntity{
     private BigDecimal price;
 
     @Column(name = "unit_in_stock")
-    private int unitInStock;
+    private Integer unitInStock;
 
     @Column(name = "thumbnail", length = 100000)
     @Lob
@@ -101,11 +101,11 @@ public class Product extends BaseEntity{
         this.shortDescription = shortDescription;
     }
 
-    public int getUnitInStock() {
+    public Integer getUnitInStock() {
         return unitInStock;
     }
 
-    public void setUnitInStock(int unitInStock) {
+    public void setUnitInStock(Integer unitInStock) {
         this.unitInStock = unitInStock;
     }
 
