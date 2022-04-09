@@ -16,7 +16,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/carts")
@@ -89,13 +88,6 @@ public class CartAPI {
         return new ResponseEntity<>(new MessageResponse("Delete cart successfully!", HttpStatus.OK, LocalDateTime.now()), HttpStatus.OK);
     }
 
-    @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<Cart>> findCartsByCustomerId(@PathVariable("customerId") long customerId ){
-
-        List<Cart> carts = cartService.findByCustomerId(customerId);
-        return new ResponseEntity<>(carts, HttpStatus.OK);
-
-    }
 
     @PutMapping("/status/{id}")
     public ResponseEntity<MessageResponse> updateStatusCart(@PathVariable("id") long theId,

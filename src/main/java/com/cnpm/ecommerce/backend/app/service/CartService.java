@@ -11,14 +11,16 @@ import com.cnpm.ecommerce.backend.app.entity.User;
 import com.cnpm.ecommerce.backend.app.enums.OrderStatus;
 import com.cnpm.ecommerce.backend.app.enums.PaymentMethod;
 import com.cnpm.ecommerce.backend.app.exception.ResourceNotFoundException;
-import com.cnpm.ecommerce.backend.app.repository.*;
+import com.cnpm.ecommerce.backend.app.repository.CartItemRepository;
+import com.cnpm.ecommerce.backend.app.repository.CartRepository;
+import com.cnpm.ecommerce.backend.app.repository.ProductRepository;
+import com.cnpm.ecommerce.backend.app.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Base64Utils;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -38,10 +40,6 @@ public class CartService implements ICartService{
     @Autowired
     private ProductRepository productRepo;
 
-    @Override
-    public List<Cart> findAll() {
-        return cartRepo.findAll();
-    }
 
     @Override
     public Page<Cart> findAllPageAndSort(Pageable pagingSort) {
@@ -75,11 +73,6 @@ public class CartService implements ICartService{
 
     }
 
-
-    @Override
-    public List<Cart> findByCustomerId(long customerId) {
-        return cartRepo.findByCustomer(customerId);
-    }
 
     @Override
     public MessageResponse createCart(CartDTO cartDTO) {

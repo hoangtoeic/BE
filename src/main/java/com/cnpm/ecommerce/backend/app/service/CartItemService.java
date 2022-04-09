@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,11 +29,6 @@ public class CartItemService implements ICartItemService{
 
     @Autowired
     private CartRepository cartRepo;
-
-    @Override
-    public List<CartItem> findAll() {
-        return cartItemRepo.findAll();
-    }
 
     @Override
     public Page<CartItem> findAllPageAndSort(Pageable pagingSort) {
@@ -58,11 +52,6 @@ public class CartItemService implements ICartItemService{
             cartItem.get().setProductIds(cartItem.get().getProduct().getId());
             return cartItem.get();
         }
-    }
-
-    @Override
-    public List<CartItem> findByCartId(Long cartId) {
-        return cartItemRepo.findCartItemByCartID(cartId);
     }
 
     @Override
