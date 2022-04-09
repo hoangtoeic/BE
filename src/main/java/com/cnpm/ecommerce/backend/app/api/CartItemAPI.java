@@ -25,7 +25,7 @@ public class CartItemAPI {
     private ICartItemService cartItemService;
 
     @GetMapping(value = { "", "/" })
-    public ResponseEntity<List<CartItem>> findAll(@RequestParam(value = "id", required = false) Long id,
+    public ResponseEntity<?> findAll(@RequestParam(value = "id", required = false) Long id,
                                                   @RequestParam(value = "cartId", required = false) Long cartId,
                                                   @RequestParam(defaultValue = "0") int page,
                                                   @RequestParam(defaultValue = "20") int limit,
@@ -34,11 +34,6 @@ public class CartItemAPI {
             Pageable pagingSort = CommonUtils.sortItem(page, limit, sort);
             Page<CartItem> cartItemPage = null;
 
-            if (id == null) {
-                cartItemPage = cartItemService.findAllPageAndSort(pagingSort);
-            } else {
-                cartItemPage = cartItemService.findByIdContaining(id, pagingSort);
-            }
             if(id == null && cartId == null) {
                 cartItemPage = cartItemService.findAllPageAndSort(pagingSort);
             } else {
@@ -50,10 +45,9 @@ public class CartItemAPI {
 
             }
 
-
-            return new ResponseEntity<>(cartItemPage.getContent(), HttpStatus.OK);
+            return new ResponseEntity<>(cartItemPage, HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new MessageResponse("NOT_FOUND", HttpStatus.NOT_FOUND, LocalDateTime.now()), HttpStatus.NOT_FOUND);
         }
 
     }
@@ -93,11 +87,4 @@ public class CartItemAPI {
         return new ResponseEntity<>(new MessageResponse("Delete cart item successfully!", HttpStatus.OK, LocalDateTime.now()), HttpStatus.OK);
     }
 
-    @GetMapping("/cart/{cartId}")
-    public ResponseEntity<List<CartItem>> findCartsByCartId(@PathVariable("cartId") long cartId ){
-
-        List<CartItem> cartItems = cartItemService.findByCartId(cartId);
-        return new ResponseEntity<>(cartItems, HttpStatus.OK);
-
-    }
 }

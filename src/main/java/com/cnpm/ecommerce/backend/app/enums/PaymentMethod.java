@@ -1,7 +1,10 @@
 package com.cnpm.ecommerce.backend.app.enums;
 
 public enum PaymentMethod {
-    CASH,
-    PAYPAL,
-    CREDIT_CARD
+    CASH(0),
+    PAYPAL(1);
+
+    private int method;
+
+    PaymentMethod(int method) { this.method = method; }
 }

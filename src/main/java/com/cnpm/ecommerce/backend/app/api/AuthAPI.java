@@ -79,7 +79,7 @@ public class AuthAPI {
     public ResponseEntity<?> registerCustomer(@Valid @RequestBody CustomerDTO customerDto, BindingResult bindingResult){
 
         if(bindingResult.hasErrors()){
-            return new ResponseEntity<>(new MessageResponse("Invalid value for create employee", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new MessageResponse("Invalid value for create customer", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);
         }
         if(customerService.existsByUserName(customerDto.getUserName())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already use.", HttpStatus.BAD_REQUEST, LocalDateTime.now()));

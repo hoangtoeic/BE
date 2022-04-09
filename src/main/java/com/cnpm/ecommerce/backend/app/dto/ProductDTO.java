@@ -24,7 +24,7 @@ public class ProductDTO extends AbstractDTO {
     private BigDecimal price;
 
     @NotNull(message = "Please enter unit in stock")
-    private int unitInStock;
+    private Integer unitInStock;
 
     private String thumbnail;
 
@@ -79,11 +79,11 @@ public class ProductDTO extends AbstractDTO {
         this.price = price;
     }
 
-    public int getUnitInStock() {
+    public Integer getUnitInStock() {
         return unitInStock;
     }
 
-    public void setUnitInStock(int unitInStock) {
+    public void setUnitInStock(Integer unitInStock) {
         this.unitInStock = unitInStock;
     }
 
