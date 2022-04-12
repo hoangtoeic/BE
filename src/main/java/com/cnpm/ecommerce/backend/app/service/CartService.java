@@ -77,7 +77,7 @@ public class CartService implements ICartService{
     @Override
     public MessageResponse createCart(CartDTO cartDTO) {
 
-        if(cartDTO.getPaymentMethod().equals(PaymentMethod.CASH)) {
+        if(cartDTO.getPaymentMethod().equals(PaymentMethod.CASH) || cartDTO.getPaymentMethod().equals(PaymentMethod.PAYPAL)) {
             Cart cart = new Cart();
             cart.setTotalCost(cartDTO.getTotalCost());
             cart.setNote(cartDTO.getNote());
@@ -87,7 +87,7 @@ public class CartService implements ICartService{
             }
             cart.setUser(customer.get());
             cart.setAddress(cartDTO.getAddress());
-            cart.setPaymentMethod(PaymentMethod.CASH);
+            cart.setPaymentMethod(cartDTO.getPaymentMethod());
             cart.setStatus(cartDTO.getStatus() == null ? OrderStatus.PENDING : cartDTO.getStatus());
             cart.setCreatedBy(cartDTO.getCreatedBy());
             cart.setCreatedDate(new Date());
@@ -113,7 +113,7 @@ public class CartService implements ICartService{
             return new MessageResponse("Create cart successfully!", HttpStatus.CREATED, LocalDateTime.now());
         }
 
-        return null;
+        return new MessageResponse("Error when create cart!" , HttpStatus.BAD_REQUEST, LocalDateTime.now());
 
     }
 
@@ -220,8 +220,13 @@ public class CartService implements ICartService{
                 throw  new ResourceNotFoundException("Not found user with ID= " + statusDto.getUserId());
             } else {
                 if(cart.get().getStatus().equals(OrderStatus.COMPLETED)) {
-                    return new MessageResponse("Order has been completed, please don't change status.", HttpStatus.OK, LocalDateTime.now());
+                    return new MessageResponse("Order has been completed, please don't change status.", HttpStatus.BAD_REQUEST, LocalDateTime.now());
                 } else {
+                    if(user.get().getAccCustomer() == true) {
+                        if(!cart.get().getStatus().equals(OrderStatus.PENDING)) {
+                            return new MessageResponse("Order has been processing, please don't change cancel status.", HttpStatus.BAD_REQUEST, LocalDateTime.now());
+                        }
+                    }
                     cart.get().setStatus(statusDto.getStatus());
                     cart.get().setModifiedBy(user.get().getUserName());
                     cart.get().setModifiedDate(new Date());

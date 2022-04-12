@@ -3,9 +3,12 @@ package com.cnpm.ecommerce.backend.app.utils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class CommonUtils {
 
@@ -36,4 +39,39 @@ public class CommonUtils {
 
         return pagingSort;
     }
+
+    public static String getBaseURL(HttpServletRequest request) {
+        String scheme = request.getScheme();
+        String serverName = request.getServerName();
+        int serverPort = request.getServerPort();
+        String contextPath = request.getContextPath();
+        StringBuffer url = new StringBuffer();
+
+        url.append(scheme).append("://").append(serverName);
+
+        if(serverPort != 80 && serverPort != 443) {
+            url.append(":").append(serverPort);
+        }
+        url.append(contextPath);
+        if(url.toString().endsWith("/")) {
+            url.append("/");
+        }
+
+        return url.toString();
+    }
+
+    public static Double exchangeCurrency(){
+        String url = "https://free.currconv.com/api/v7/convert?q=USD_VND&compact=ultra&apiKey=41700239ba29f3a2666f";
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        Object object = restTemplate.getForObject(url, Object.class);
+
+        String ex = object.toString();
+
+        String[] arr = ex.split("=");
+
+        return Double.parseDouble(arr[1].substring(0, arr[1].length() - 1));
+    }
+
 }
