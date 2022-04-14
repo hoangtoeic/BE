@@ -40,4 +40,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Long countCustomer();
 
     Optional<User> findByEmail(String email);
+
+    @Query("SELECT u FROM User u WHERE u.isAccCustomer=true AND u.email=?1")
+    Optional<User> findByEmailCustomer(String customerEmail);
+
+    @Query("SELECT u FROM User u WHERE u.isAccCustomer=true AND u.userName=?1")
+    Optional<User> findByUsernameCustomer(String username);
 }

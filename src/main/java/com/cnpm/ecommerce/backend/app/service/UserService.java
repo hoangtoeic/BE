@@ -368,6 +368,37 @@ public class UserService implements IUserService {
     }
 
     @Override
+    public User findByEmailCustomer(String customerEmail) {
+
+        Optional<User> theCustomer = userRepository.findByEmailCustomer(customerEmail);
+
+        if(!theCustomer.isPresent()) {
+            throw new ResourceNotFoundException("Not found user with email=" + customerEmail);
+        } else {
+            if(theCustomer.get().getEnabled() == 1) {
+                return theCustomer.get();
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public User findByUsernameCustomer(String username) {
+        Optional<User> theCustomer = userRepository.findByUsernameCustomer(username);
+
+        if(!theCustomer.isPresent()) {
+            throw new ResourceNotFoundException("Not found user with username=" + username);
+        } else {
+            if(theCustomer.get().getEnabled() == 1) {
+                return theCustomer.get();
+            }
+        }
+
+        return null;
+    }
+
+    @Override
     public MessageResponse resetPassword(PasswordResetRequest request, String siteURL) throws MessagingException, UnsupportedEncodingException{
         Optional<User> user = userRepository.findByEmail(request.getEmail());
 
