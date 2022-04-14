@@ -54,6 +54,10 @@ public interface IUserService extends UserDetailsService {
 
     User findByIdCustomer(Long customerId);
 
+    User findByEmailCustomer(String customerEmail);
+
+    User findByUsernameCustomer(String username);
+
     MessageResponse resetPassword(PasswordResetRequest request, String getSiteURL) throws MessagingException, UnsupportedEncodingException;
 
     MessageResponse changeResetPassword(PasswordResetChangeRequest request);
