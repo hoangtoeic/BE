@@ -3,9 +3,11 @@ package com.cnpm.ecommerce.backend.app.service;
 import com.cnpm.ecommerce.backend.app.dto.MessageResponse;
 import com.cnpm.ecommerce.backend.app.dto.ProductDTO;
 import com.cnpm.ecommerce.backend.app.entity.Category;
+import com.cnpm.ecommerce.backend.app.entity.Feedback;
 import com.cnpm.ecommerce.backend.app.entity.Product;
 import com.cnpm.ecommerce.backend.app.exception.ResourceNotFoundException;
 import com.cnpm.ecommerce.backend.app.repository.BrandRepository;
+import com.cnpm.ecommerce.backend.app.repository.FeedbackRepository;
 import com.cnpm.ecommerce.backend.app.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Base64Utils;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -24,6 +27,9 @@ import java.util.Optional;
 @Service
 @Transactional
 public class ProductService implements IProductService{
+
+    @Autowired
+    private FeedbackRepository feedbackRepository;
 
     @Autowired
     private ProductRepository productRepository;
@@ -38,9 +44,25 @@ public class ProductService implements IProductService{
     public List<Product> findAll() {
 
         List<Product> products = productRepository.findAll();
+
+        List<Feedback> feedbacks = feedbackRepository.findAll();
         for(Product product : products) {
             product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
             product.setCategoryIds(product.getCategory().getId());
+
+            // set average rating
+            long count = 0;
+            long sum = 0 ;
+            for (Feedback feedback: feedbacks) {
+                if(feedback.getProduct().getId() ==  product.getId()) {
+                    count ++;
+                    sum += feedback.getRating();
+                }
+            }
+            if(count != 0) {
+                BigDecimal average = new BigDecimal (sum / count);
+                product.setRatingAverage(average);
+            }
         }
 
         return products;
@@ -50,9 +72,27 @@ public class ProductService implements IProductService{
     public Page<Product> findAllPageAndSort(Pageable pagingSort) {
         Page<Product> productPage =  productRepository.findAll(pagingSort);
 
+        List<Feedback> feedbacks = feedbackRepository.findAll();
         for(Product product : productPage.getContent()) {
             product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
             product.setCategoryIds(product.getCategory().getId());
+
+            // set average rating
+            long count = 0;
+            long sum = 0 ;
+            for (Feedback feedback: feedbacks) {
+                if(feedback.getProduct().getId() ==  product.getId()) {
+                    count ++;
+                    sum += feedback.getRating();
+                }
+            }
+            if(count != 0) {
+              //  float average = (float) sum / (float) count;
+                final DecimalFormat df = new DecimalFormat("0.00");
+                float average =  (float) sum/ (float) count;
+                BigDecimal convertAverage = new BigDecimal (df.format(average));
+                product.setRatingAverage(convertAverage);
+            }
         }
         return  productPage;
     }
@@ -65,6 +105,25 @@ public class ProductService implements IProductService{
         } else {
             product.get().setThumbnail(Base64Utils.encodeToString(product.get().getThumbnailArr()));
             product.get().setCategoryIds(product.get().getCategory().getId());
+
+            // set average rating
+            List<Feedback> feedbacks = feedbackRepository.findAll();
+            long count = 0;
+            long sum = 0 ;
+            for (Feedback feedback: feedbacks) {
+                if(feedback.getProduct().getId() ==  theId) {
+                    count ++;
+                    sum += feedback.getRating();
+                }
+            }
+            if(count != 0) {
+                //  float average = (float) sum / (float) count;
+                final DecimalFormat df = new DecimalFormat("0.00");
+                float average =  (float) sum/ (float) count;
+                BigDecimal convertAverage = new BigDecimal (df.format(average));
+                product.get().setRatingAverage(convertAverage);
+            }
+
             return product.get();
         }
 
@@ -90,6 +149,8 @@ public class ProductService implements IProductService{
         theProduct.setBrandEntity(brandService.findByName(theProductDto.getBrand()));
         theProduct.setCreatedDate(new Date());
         theProduct.setCreatedBy(theProductDto.getCreatedBy());
+
+
         if(theProductDto.getDiscount() == null) {
             theProduct.setDiscount(0);
         } else {
@@ -124,6 +185,23 @@ public class ProductService implements IProductService{
             theProduct.get().setBrandEntity(brandService.findByName(theProductDto.getBrand()));
             theProduct.get().setModifiedDate(new Date());
             theProduct.get().setModifiedBy(theProductDto.getModifiedBy());
+            // set average rating
+            List<Feedback> feedbacks = feedbackRepository.findAll();
+            long count = 0;
+            long sum = 0 ;
+            for (Feedback feedback: feedbacks) {
+                if(feedback.getProduct().getId() ==  theId) {
+                    count ++;
+                    sum += feedback.getRating();
+                }
+            }
+            if(count != 0) {
+                //  float average = (float) sum / (float) count;
+                final DecimalFormat df = new DecimalFormat("0.00");
+                float average =  (float) sum/ (float) count;
+                BigDecimal convertAverage = new BigDecimal (df.format(average));
+                theProduct.get().setRatingAverage(convertAverage);
+            }
 
             if(theProductDto.getDiscount() == null) {
                 theProduct.get().setDiscount(0);
@@ -186,6 +264,25 @@ public class ProductService implements IProductService{
         for(Product product : productPage.getContent()) {
             product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
             product.setCategoryIds(product.getCategory().getId());
+
+            // set average rating
+            List<Feedback> feedbacks = feedbackRepository.findAll();
+            long count = 0;
+            long sum = 0 ;
+            for (Feedback feedback: feedbacks) {
+                if(feedback.getProduct().getId() ==  product.getId()) {
+                    count ++;
+                    sum += feedback.getRating();
+                }
+            }
+            if(count != 0) {
+                //  float average = (float) sum / (float) count;
+                final DecimalFormat df = new DecimalFormat("0.00");
+                float average =  (float) sum/ (float) count;
+                BigDecimal convertAverage = new BigDecimal (df.format(average));
+                product.setRatingAverage(convertAverage);
+            }
+
         }
         return  productPage;
     }
@@ -204,6 +301,27 @@ public class ProductService implements IProductService{
                 for(Product product : productPage.getContent()) {
                     product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
                     product.setCategoryIds(categoryId);
+
+                    // set average rating
+                    List<Feedback> feedbacks = feedbackRepository.findAll();
+                    long count = 0;
+                    long sum = 0 ;
+                    for (Feedback feedback: feedbacks) {
+                        if(feedback.getProduct().getId() ==  product.getId()) {
+                            count ++;
+                            sum += feedback.getRating();
+                        }
+                    }
+                    if(count != 0) {
+                        //  float average = (float) sum / (float) count;
+                        final DecimalFormat df = new DecimalFormat("0.00");
+                        float average =  (float) sum/ (float) count;
+                        BigDecimal convertAverage = new BigDecimal (df.format(average));
+                        product.setRatingAverage(convertAverage);
+                    }
+
+
+
                 }
                 return  productPage;
 
