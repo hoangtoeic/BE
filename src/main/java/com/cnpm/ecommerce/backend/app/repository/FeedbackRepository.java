@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
-    Page<Feedback> findByRatingContaining(int rating, Pageable pageable);
+    Page<Feedback> findByRating(int rating, Pageable pageable);
 
     Optional<Feedback> findByUserIdAndProductId(Long customerId, Long productId);
 
