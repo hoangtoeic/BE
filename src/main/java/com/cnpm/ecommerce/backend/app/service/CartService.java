@@ -4,17 +4,11 @@ import com.cnpm.ecommerce.backend.app.dto.CartDTO;
 import com.cnpm.ecommerce.backend.app.dto.CartItemDTO;
 import com.cnpm.ecommerce.backend.app.dto.MessageResponse;
 import com.cnpm.ecommerce.backend.app.dto.OrderStatusDTO;
-import com.cnpm.ecommerce.backend.app.entity.Cart;
-import com.cnpm.ecommerce.backend.app.entity.CartItem;
-import com.cnpm.ecommerce.backend.app.entity.Product;
-import com.cnpm.ecommerce.backend.app.entity.User;
+import com.cnpm.ecommerce.backend.app.entity.*;
 import com.cnpm.ecommerce.backend.app.enums.OrderStatus;
 import com.cnpm.ecommerce.backend.app.enums.PaymentMethod;
 import com.cnpm.ecommerce.backend.app.exception.ResourceNotFoundException;
-import com.cnpm.ecommerce.backend.app.repository.CartItemRepository;
-import com.cnpm.ecommerce.backend.app.repository.CartRepository;
-import com.cnpm.ecommerce.backend.app.repository.ProductRepository;
-import com.cnpm.ecommerce.backend.app.repository.UserRepository;
+import com.cnpm.ecommerce.backend.app.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,14 +34,21 @@ public class CartService implements ICartService{
     @Autowired
     private ProductRepository productRepo;
 
+    @Autowired
+    private CartTempRepository cartTempRepo;
+
 
     @Override
     public Page<Cart> findAllPageAndSort(Pageable pagingSort) {
 
         Page<Cart> cartPage = cartRepo.findAll(pagingSort);
 
+        return getCarts(cartPage);
+    }
+
+    private Page<Cart> getCarts(Page<Cart> cartPage) {
         for(Cart cart : cartPage.getContent()) {
-            cart.setUserIds(cart.getUser().getId());
+            cart.setCustomerIds(cart.getCustomer().getId());
             for(CartItem cartItem : cart.getCartItems()) {
                 cartItem.setCartIds(cart.getId());
                 cartItem.setProductIds(cartItem.getProduct().getId());
@@ -63,7 +64,7 @@ public class CartService implements ICartService{
         if(!cart.isPresent()) {
             throw  new ResourceNotFoundException("Not found cart with ID=" + theId);
         } else {
-            cart.get().setUserIds(cart.get().getUser().getId());
+            cart.get().setCustomerIds(cart.get().getCustomer().getId());
             for(CartItem cartItem : cart.get().getCartItems()) {
                 cartItem.setCartIds(cart.get().getId());
                 cartItem.setProductIds(cartItem.getProduct().getId());
@@ -85,7 +86,7 @@ public class CartService implements ICartService{
             if(!customer.isPresent()) {
                 throw  new ResourceNotFoundException("Not found customer with ID=" + cartDTO.getCustomerId());
             }
-            cart.setUser(customer.get());
+            cart.setCustomer(customer.get());
             cart.setAddress(cartDTO.getAddress());
             cart.setPaymentMethod(cartDTO.getPaymentMethod());
             cart.setStatus(cartDTO.getStatus() == null ? OrderStatus.PENDING : cartDTO.getStatus());
@@ -94,12 +95,14 @@ public class CartService implements ICartService{
 
             Cart savedCart = cartRepo.save(cart);
 
-            for( CartItemDTO cartItemDTO : cartDTO.getCartItems()){
+            List<CartTemp> cartTemps = cartTempRepo.findByCustomer(customer.get().getId());
+
+            for(CartTemp cartItemDTO : cartTemps){
                 CartItem cartItem = new CartItem();
                 cartItem.setCart(savedCart);
-                Optional<Product> product = productRepo.findById(cartItemDTO.getProductId());
+                Optional<Product> product = productRepo.findById(cartItemDTO.getProduct().getId());
                 if(!product.isPresent()) {
-                    throw  new ResourceNotFoundException("Not found product with ID=" + cartItemDTO.getProductId());
+                    throw  new ResourceNotFoundException("Not found product with ID=" + cartItemDTO.getProduct().getId());
                 }
                 cartItem.setProduct(product.get());
                 cartItem.setQuantity(cartItemDTO.getQuantity() == null ? 1 : cartItemDTO.getQuantity());
@@ -108,6 +111,8 @@ public class CartService implements ICartService{
                 cartItem.setCreatedDate(new Date());
 
                 cartItemRepo.save(cartItem);
+
+                cartTempRepo.delete(cartItemDTO);
             }
 
             return new MessageResponse("Create cart successfully!", HttpStatus.CREATED, LocalDateTime.now());
@@ -117,50 +122,50 @@ public class CartService implements ICartService{
 
     }
 
-    @Override
-    public MessageResponse updateCart(Long theId, CartDTO cartDTO) {
-
-        Optional<Cart> cart = cartRepo.findById(theId);
-
-        if(!cart.isPresent()) {
-            throw new ResourceNotFoundException("Can't find Cart with ID=" + theId);
-        } else {
-            cart.get().setTotalCost(cartDTO.getTotalCost());
-            cart.get().setNote(cartDTO.getNote());
-            Optional<User> customer = userRepo.findByIdCustomer(cartDTO.getCustomerId());
-            if(!customer.isPresent()) {
-                throw  new ResourceNotFoundException("Not found customer with ID=" + cartDTO.getCustomerId());
-            }
-            cart.get().setUser(customer.get());
-            cart.get().setAddress(cartDTO.getAddress());
-            cart.get().setStatus(cartDTO.getStatus());
-            cart.get().setModifiedBy(cartDTO.getModifiedBy());
-            cart.get().setModifiedDate(cartDTO.getModifiedDate());
-
-            cartRepo.save(cart.get());
-
-            for(CartItemDTO cartItemDTO : cartDTO.getCartItems()){
-                Optional<CartItem> cartItem = cartItemRepo.findById(cartItemDTO.getId());
-                if(!cartItem.isPresent()) {
-                    throw  new ResourceNotFoundException("Not found cartItem with ID=" + cartItemDTO.getId());
-                }
-                Optional<Product> product = productRepo.findById(cartItemDTO.getProductId());
-                if(!product.isPresent()) {
-                    throw  new ResourceNotFoundException("Not found product with ID=" + cartItemDTO.getProductId());
-                }
-                cartItem.get().setProduct(product.get());
-                cartItem.get().setQuantity(cartItemDTO.getQuantity() == null ? 1 : cartItemDTO.getQuantity());
-                cartItem.get().setSalePrice(cartItemDTO.getSalePrice());
-                cartItem.get().setModifiedBy(cartItemDTO.getModifiedBy());
-                cartItem.get().setModifiedDate(new Date());
-
-                cartItemRepo.save(cartItem.get());
-            }
-
-        }
-
-        return new MessageResponse("Update cart successfully!" , HttpStatus.OK, LocalDateTime.now());
-    }
+//    @Override
+//    public MessageResponse updateCart(Long theId, CartDTO cartDTO) {
+//
+//        Optional<Cart> cart = cartRepo.findById(theId);
+//
+//        if(!cart.isPresent()) {
+//            throw new ResourceNotFoundException("Can't find Cart with ID=" + theId);
+//        } else {
+//            cart.get().setTotalCost(cartDTO.getTotalCost());
+//            cart.get().setNote(cartDTO.getNote());
+//            Optional<User> customer = userRepo.findByIdCustomer(cartDTO.getCustomerId());
+//            if(!customer.isPresent()) {
+//                throw  new ResourceNotFoundException("Not found customer with ID=" + cartDTO.getCustomerId());
+//            }
+//            cart.get().setCustomer(customer.get());
+//            cart.get().setAddress(cartDTO.getAddress());
+//            cart.get().setStatus(cartDTO.getStatus());
+//            cart.get().setModifiedBy(cartDTO.getModifiedBy());
+//            cart.get().setModifiedDate(cartDTO.getModifiedDate());
+//
+//            cartRepo.save(cart.get());
+//
+//            for(CartItemDTO cartItemDTO : cartDTO.getCartItems()){
+//                Optional<CartItem> cartItem = cartItemRepo.findById(cartItemDTO.getId());
+//                if(!cartItem.isPresent()) {
+//                    throw  new ResourceNotFoundException("Not found cartItem with ID=" + cartItemDTO.getId());
+//                }
+//                Optional<Product> product = productRepo.findById(cartItemDTO.getProductId());
+//                if(!product.isPresent()) {
+//                    throw  new ResourceNotFoundException("Not found product with ID=" + cartItemDTO.getProductId());
+//                }
+//                cartItem.get().setProduct(product.get());
+//                cartItem.get().setQuantity(cartItemDTO.getQuantity() == null ? 1 : cartItemDTO.getQuantity());
+//                cartItem.get().setSalePrice(cartItemDTO.getSalePrice());
+//                cartItem.get().setModifiedBy(cartItemDTO.getModifiedBy());
+//                cartItem.get().setModifiedDate(new Date());
+//
+//                cartItemRepo.save(cartItem.get());
+//            }
+//
+//        }
+//
+//        return new MessageResponse("Update cart successfully!" , HttpStatus.OK, LocalDateTime.now());
+//    }
 
     @Override
     public void deleteCart(Long theId) {
@@ -175,14 +180,7 @@ public class CartService implements ICartService{
 
         Page<Cart> cartPage = cartRepo.findById(id, pagingSort);
 
-        for(Cart cart : cartPage.getContent()) {
-            cart.setUserIds(cart.getUser().getId());
-            for(CartItem cartItem : cart.getCartItems()) {
-                cartItem.setCartIds(cart.getId());
-                cartItem.setProductIds(cartItem.getProduct().getId());
-            }
-        }
-        return  cartPage;
+        return getCarts(cartPage);
     }
 
     @Override
@@ -192,16 +190,9 @@ public class CartService implements ICartService{
             if(!customer.isPresent()){
                 throw  new ResourceNotFoundException("Not found customer with ID= " + customerId);
             } else {
-                Page<Cart> cartPage = cartRepo.findByUserId(customerId,pagingSort);
+                Page<Cart> cartPage = cartRepo.findByCustomerId(customerId,pagingSort);
 
-                for(Cart cart : cartPage.getContent()) {
-                    cart.setUserIds(cart.getUser().getId());
-                    for(CartItem cartItem : cart.getCartItems()) {
-                        cartItem.setCartIds(cart.getId());
-                        cartItem.setProductIds(cartItem.getProduct().getId());
-                    }
-                }
-                return  cartPage;
+                return getCarts(cartPage);
             }
 
 

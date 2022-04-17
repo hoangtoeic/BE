@@ -15,7 +15,7 @@ public interface ICartService {
 
     MessageResponse createCart(CartDTO cartDTO);
 
-    MessageResponse updateCart(Long theId, CartDTO cartDTO);
+//    MessageResponse updateCart(Long theId, CartDTO cartDTO);
 
     void deleteCart(Long theId);
 

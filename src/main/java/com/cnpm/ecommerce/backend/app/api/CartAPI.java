@@ -145,17 +145,17 @@ public class CartAPI {
         messageResponse = new MessageResponse("Error payment", HttpStatus.INTERNAL_SERVER_ERROR, LocalDateTime.now());
         return new ResponseEntity<>(messageResponse, messageResponse.getStatus());
     }
-    @PutMapping("/{id}")
-    public ResponseEntity<MessageResponse> updateCart(@PathVariable("id") long theId,
-                                                      @Validated @RequestBody CartDTO cartDto, BindingResult bindingResult){
-
-        if(bindingResult.hasErrors()){
-            return new ResponseEntity<>(new MessageResponse("Invalid value for update cart", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);
-        }
-
-        MessageResponse messageResponse = cartService.updateCart(theId, cartDto);
-        return new ResponseEntity<>(messageResponse, messageResponse.getStatus());
-    }
+//    @PutMapping("/{id}")
+//    public ResponseEntity<MessageResponse> updateCart(@PathVariable("id") long theId,
+//                                                      @Validated @RequestBody CartDTO cartDto, BindingResult bindingResult){
+//
+//        if(bindingResult.hasErrors()){
+//            return new ResponseEntity<>(new MessageResponse("Invalid value for update cart", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);
+//        }
+//
+//        MessageResponse messageResponse = cartService.updateCart(theId, cartDto);
+//        return new ResponseEntity<>(messageResponse, messageResponse.getStatus());
+//    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable("id") long theId){
@@ -186,7 +186,7 @@ public class CartAPI {
 
                 MessageResponse messageResponse = cartService.createCart(cartDTO);
 
-                paypalTransactionService.deleteTransaction(paymentId);
+//                paypalTransactionService.deleteTransaction(paymentId);
 
                 return new ResponseEntity<>(messageResponse, messageResponse.getStatus());
             }
