@@ -25,9 +25,6 @@ import java.util.Optional;
 public class FeedbackService implements IFeedbackService {
 
     @Autowired
-    private CartItemRepository cartItemRepo;
-
-    @Autowired
     private CartRepository cartRepo;
 
     @Autowired
@@ -198,6 +195,6 @@ public class FeedbackService implements IFeedbackService {
 
     @Override
     public Page<Feedback> findByRatingContaining(int rating, Pageable pagingSort) {
-        return feedbackRepository.findByRatingContaining(rating, pagingSort);
+        return feedbackRepository.findByRating(rating, pagingSort);
     }
 }
