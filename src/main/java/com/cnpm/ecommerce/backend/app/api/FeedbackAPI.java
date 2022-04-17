@@ -26,7 +26,7 @@ public class FeedbackAPI {
     private IFeedbackService feedbackService;
 
     @GetMapping("")
-    public ResponseEntity<List<Feedback>> findAll(@RequestParam(value = "q", required = false) Integer rating,
+    public ResponseEntity<?> findAll(@RequestParam(value = "q", required = false) Integer rating,
                                                   @RequestParam(defaultValue = "0") int page,
                                                   @RequestParam(defaultValue = "20") int limit,
                                                   @RequestParam(defaultValue = "id,ASC") String[] sort){
@@ -42,7 +42,7 @@ public class FeedbackAPI {
                 feedbackPage = feedbackService.findByRatingContaining(rating, pagingSort);
             }
 
-            return new ResponseEntity<>(feedbackPage.getContent(), HttpStatus.OK);
+            return new ResponseEntity<>(feedbackPage, HttpStatus.OK);
 
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -52,8 +52,8 @@ public class FeedbackAPI {
     @GetMapping("/{id}")
     public ResponseEntity<Feedback> findById(@PathVariable("id") Long theId){
 
-        Feedback thFeedback = feedbackService.findById(theId);
-        return new ResponseEntity<>(thFeedback, HttpStatus.OK);
+        Feedback theFeedback = feedbackService.findById(theId);
+        return new ResponseEntity<>(theFeedback, HttpStatus.OK);
     }
 
     @PostMapping("")

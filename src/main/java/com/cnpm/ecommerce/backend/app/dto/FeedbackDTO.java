@@ -3,11 +3,16 @@ package com.cnpm.ecommerce.backend.app.dto;
 import com.cnpm.ecommerce.backend.app.entity.Product;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 @JsonIgnoreProperties({"product", "customerDTO"})
 public class FeedbackDTO extends AbstractDTO{
 
+    @NotNull(message = "Please Rating between 1-5")
+    @Min(1)
+    @Max(5)
     private int rating;
 
     private Product product;
