@@ -33,18 +33,6 @@ public class CartDTO extends AbstractDTO {
     @EnumNamePattern(regexp = "CASH|PAYPAL")
     private PaymentMethod paymentMethod;
 
-    @NotNull(message = "is required")
-    private List<CartItemDTO> cartItems = new ArrayList<>();
-
-    public List<CartItemDTO> getCartItems() {
-        return cartItems;
-    }
-
-    public void setCartItems(List<CartItemDTO> cartItems) {
-        this.cartItems.clear();
-        this.cartItems.addAll(cartItems);
-    }
-
     public long getCustomerId() {
         return customerId;
     }

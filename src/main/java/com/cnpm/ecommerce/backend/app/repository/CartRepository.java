@@ -10,11 +10,11 @@ import java.util.List;
 
 public interface CartRepository extends JpaRepository<Cart, Long> {
 
-    @Query("SELECT c from Cart c WHERE c.user.id=?1")
+    @Query("SELECT c from Cart c WHERE c.customer.id=?1")
     List<Cart> findByCustomer(Long customerId);
 
     Page<Cart> findById(Long id, Pageable pageable);
 
-    Page<Cart> findByUserId(Long customerId, Pageable pageable);
+    Page<Cart> findByCustomerId(Long customerId, Pageable pageable);
 }
 
