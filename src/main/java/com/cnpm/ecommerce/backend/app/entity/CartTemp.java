@@ -35,6 +35,14 @@ public class CartTemp extends BaseEntity{
     @JsonProperty(value = "productId")
     private Long productIds;
 
+    @Transient
+    @JsonProperty(value = "productName")
+    private String productName;
+
+    @Transient
+    @JsonProperty(value = "productThumbnail")
+    private String productThumbnail;
+
     public CartTemp() {
     }
 
@@ -69,4 +77,12 @@ public class CartTemp extends BaseEntity{
     public User getCustomer() { return customer; }
 
     public void setCustomer(User customer) { this.customer = customer; }
+
+    public String getProductName() { return productName; }
+
+    public void setProductName(String productName) { this.productName = productName; }
+
+    public String getProductThumbnail() { return productThumbnail; }
+
+    public void setProductThumbnail(String productThumbnail) { this.productThumbnail = productThumbnail; }
 }
