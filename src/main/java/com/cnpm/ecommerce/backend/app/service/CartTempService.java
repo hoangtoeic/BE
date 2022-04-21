@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Base64Utils;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -39,12 +40,7 @@ public class CartTempService implements ICartTempService{
     public Page<CartTemp> findAllPageAndSort(Pageable pagingSort) {
         Page<CartTemp> cartPage = cartTempRepository.findAll(pagingSort);
 
-        for(CartTemp cart : cartPage.getContent()) {
-            cart.setCustomerIds(cart.getCustomer().getId());
-            cart.setProductIds(cart.getProduct().getId());
-
-        }
-        return  cartPage;
+        return getCartTemps(cartPage);
     }
 
     @Override
@@ -152,9 +148,15 @@ public class CartTempService implements ICartTempService{
     public Page<CartTemp> findByCustomerIdPageAndSort(Long customerId, Pageable pagingSort) {
         Page<CartTemp> cartPage = cartTempRepository.findByCustomerId(customerId, pagingSort);
 
+        return getCartTemps(cartPage);
+    }
+
+    private Page<CartTemp> getCartTemps(Page<CartTemp> cartPage) {
         for(CartTemp cart : cartPage.getContent()) {
             cart.setCustomerIds(cart.getCustomer().getId());
             cart.setProductIds(cart.getProduct().getId());
+            cart.setProductName(cart.getProduct().getName());
+            cart.setProductThumbnail(Base64Utils.encodeToString(cart.getProduct().getThumbnailArr()));
 
         }
         return  cartPage;
