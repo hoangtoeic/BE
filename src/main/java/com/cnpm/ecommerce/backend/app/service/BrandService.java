@@ -97,11 +97,16 @@ public class BrandService implements IBrandService{
     }
 
     @Override
-    public void deleteBrand(Long theId) {
+    public MessageResponse deleteBrand(Long theId) {
         Brand theBrand = brandRepository.findById(theId).orElseThrow(
                 () -> new ResourceNotFoundException("Not found brand with ID=" + theId));
 
+        if(brandRepository.count() > 0) {
+            return new MessageResponse("Can't delete brand, just delete all product in this brand", HttpStatus.BAD_REQUEST,
+                    LocalDateTime.now());
+        }
         brandRepository.delete(theBrand);
+        return new MessageResponse("Deleted successfully!", HttpStatus.OK, LocalDateTime.now());
     }
 
     @Override

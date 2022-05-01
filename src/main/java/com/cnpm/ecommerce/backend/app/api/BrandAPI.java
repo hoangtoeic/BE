@@ -86,7 +86,7 @@ public class BrandAPI {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteBrand(@PathVariable("id") Long theId){
 
-        brandService.deleteBrand(theId);
-        return new ResponseEntity<>(new MessageResponse("Deleted successfully!", HttpStatus.OK, LocalDateTime.now()), HttpStatus.OK);
+       MessageResponse messageResponse = brandService.deleteBrand(theId);
+        return new ResponseEntity<>(messageResponse, messageResponse.getStatus());
     }
 }

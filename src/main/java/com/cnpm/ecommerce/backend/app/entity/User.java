@@ -56,6 +56,9 @@ public class User extends BaseEntity{
     @JsonIgnoreProperties("user")
     private Set<Feedback> feedbacks = new HashSet<>();
 
+    @Transient
+    private String roleCode;
+
     public User() {
     }
 
@@ -150,4 +153,8 @@ public class User extends BaseEntity{
     public byte[] getProfilePictureArr() { return profilePictureArr; }
 
     public void setProfilePictureArr(byte[] profilePictureArr) { this.profilePictureArr = profilePictureArr; }
+
+    public String getRoleCode() { return roleCode; }
+
+    public void setRoleCode(String roleCode) { this.roleCode = roleCode; }
 }

@@ -1,5 +1,7 @@
 package com.cnpm.ecommerce.backend.app.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -7,6 +9,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -61,17 +64,17 @@ public class CommonUtils {
     }
 
     public static Double exchangeCurrency(){
-        String url = "https://free.currconv.com/api/v7/convert?q=USD_VND&compact=ultra&apiKey=41700239ba29f3a2666f";
+        String url = "https://v6.exchangerate-api.com/v6/675b2f4248bd548f7b3f133f/latest/USD";
 
         RestTemplate restTemplate = new RestTemplate();
 
-        Object object = restTemplate.getForObject(url, Object.class);
+        Map<String, Object> object = restTemplate.getForObject(url, HashMap.class);
 
-        String ex = object.toString();
+        Map<String, Object> conversionRates = (Map<String, Object>) object.get("conversion_rates");
 
-        String[] arr = ex.split("=");
+        Object usd = conversionRates.get("VND");
 
-        return Double.parseDouble(arr[1].substring(0, arr[1].length() - 1));
+        return Double.parseDouble(usd.toString());
     }
 
 }
