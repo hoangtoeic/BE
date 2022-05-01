@@ -202,18 +202,24 @@ public class UserService implements IUserService {
     public Page<User> findAllPageAndSortEmployee(Pageable pagingSort) {
         Page<User> employeePage =  userRepository.findByIsAccCustomer(false, pagingSort);
 
-        for(User employee : employeePage.getContent()) {
-                employee.setProfilePicture(Base64Utils.encodeToString(employee.getProfilePictureArr()));
-        }
-        return  employeePage;
+        return getUsers(employeePage);
     }
 
     @Override
     public Page<User> findByUserNameContainingEmployee(String userName, Pageable pagingSort) {
         Page<User> employeePage =  userRepository.findByUserNameContainingAndIsAccCustomer(userName,false, pagingSort);
 
+        return getUsers(employeePage);
+    }
+
+    private Page<User> getUsers(Page<User> employeePage) {
         for(User employee : employeePage.getContent()) {
                 employee.setProfilePicture(Base64Utils.encodeToString(employee.getProfilePictureArr()));
+            if(employee.getRoles().size() == 2) {
+                employee.setRoleCode("ROLE_ADMIN");
+            } else {
+                employee.setRoleCode("ROLE_EMPLOYEE");
+            }
         }
         return  employeePage;
     }

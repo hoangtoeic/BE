@@ -18,7 +18,7 @@ public interface ICategoryService {
 
     MessageResponse updateCategory(Long theId, CategoryDTO theCategoryDto);
 
-    void deleteCategory(Long theId);
+    MessageResponse deleteCategory(Long theId);
 
     Page<Category> findAllPageAndSort(Pageable pagingSort);
 

@@ -18,7 +18,7 @@ public interface IBrandService {
 
     MessageResponse updateBrand(Long theId, BrandDTO theBrandDto);
 
-    void deleteBrand(Long theId);
+    MessageResponse deleteBrand(Long theId);
 
     Page<Brand> findAllPageAndSort(Pageable pagingSort);
 

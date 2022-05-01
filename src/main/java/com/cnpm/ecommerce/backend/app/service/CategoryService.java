@@ -97,11 +97,16 @@ public class CategoryService implements ICategoryService{
     }
 
     @Override
-    public void deleteCategory(Long theId) {
+    public MessageResponse deleteCategory(Long theId) {
         Category theCategory = categoryRepository.findById(theId).orElseThrow(
                 () -> new ResourceNotFoundException("Not found category with ID=" + theId));
 
+        if(categoryRepository.count() > 0) {
+            return new MessageResponse("Can't delete category, just delete all product in this category", HttpStatus.BAD_REQUEST,
+                    LocalDateTime.now());
+        }
         categoryRepository.delete(theCategory);
+        return new MessageResponse("Deleted successfully!", HttpStatus.OK, LocalDateTime.now());
     }
 
     @Override
