@@ -29,6 +29,7 @@ public class EmployeeAPI {
 
     @GetMapping("")
     public ResponseEntity<Page<User>> findAll(@RequestParam(name = "q", required = false) String userName,
+                                              @RequestParam(name = "enabled", required = false) Integer enabled,
                                               @RequestParam(defaultValue = "0") int page,
                                               @RequestParam(defaultValue = "20") int limit,
                                               @RequestParam(defaultValue = "id,ASC") String[] sort){
@@ -38,10 +39,17 @@ public class EmployeeAPI {
             Pageable pagingSort = CommonUtils.sortItem(page, limit, sort);
             Page<User> employeePage;
 
-            if(userName == null) {
+            if(userName == null && enabled == null) {
                 employeePage = employeeService.findAllPageAndSortEmployee(pagingSort);
             } else {
-                employeePage = employeeService.findByUserNameContainingEmployee(userName, pagingSort);
+                if(enabled == null){
+                    employeePage = employeeService.findByUserNameContainingEmployee(userName, pagingSort);
+                } else if (userName == null) {
+                    employeePage = employeeService.findByEnabledEmployee(enabled, pagingSort);
+                } else {
+                    employeePage = employeeService.findByUserNameContainingAndEnabledEmployee(userName, enabled, pagingSort);
+                }
+
             }
 
             return new ResponseEntity<>(employeePage, HttpStatus.OK);
@@ -91,5 +99,12 @@ public class EmployeeAPI {
     @GetMapping("/count")
     public ResponseEntity<?> count(){
         return new ResponseEntity<>(employeeService.countEmployee(), HttpStatus.OK);
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<MessageResponse> activeEmployee(@RequestParam(name = "username", required = true) String userName){
+
+        MessageResponse messageResponse = employeeService.activeEmployee(userName);
+        return new ResponseEntity<>(messageResponse, messageResponse.getStatus());
     }
 }
