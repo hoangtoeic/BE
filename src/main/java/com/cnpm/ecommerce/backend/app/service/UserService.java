@@ -335,22 +335,22 @@ public class UserService implements IUserService {
 
     @Override
     public Page<User> findAllPageAndSortCustomer(Pageable pagingSort) {
-        Page<User> employeePage =  userRepository.findByIsAccCustomer(true,pagingSort);
+        Page<User> customerPage =  userRepository.findByIsAccCustomer(true,pagingSort);
 
-        for(User employee : employeePage.getContent()) {
-                employee.setProfilePicture(Base64Utils.encodeToString(employee.getProfilePictureArr()));
+        for(User customer : customerPage.getContent()) {
+            customer.setProfilePicture(Base64Utils.encodeToString(customer.getProfilePictureArr()));
         }
-        return  employeePage;
+        return  customerPage;
     }
 
     @Override
     public Page<User> findByUserNameContainingCustomer(String userName, Pageable pagingSort) {
-        Page<User> employeePage =  userRepository.findByUserNameContainingAndIsAccCustomer(userName, true, pagingSort);
+        Page<User> customerPage =  userRepository.findByUserNameContainingAndIsAccCustomer(userName, true, pagingSort);
 
-        for(User employee : employeePage.getContent()) {
-                employee.setProfilePicture(Base64Utils.encodeToString(employee.getProfilePictureArr()));
+        for(User customer : customerPage.getContent()) {
+            customer.setProfilePicture(Base64Utils.encodeToString(customer.getProfilePictureArr()));
         }
-        return  employeePage;
+        return  customerPage;
     }
 
     @Override
@@ -364,37 +364,6 @@ public class UserService implements IUserService {
 
         if(!theCustomer.isPresent()) {
             throw new ResourceNotFoundException("Not found user with ID=" + customerId);
-        } else {
-            if(theCustomer.get().getEnabled() == 1) {
-                return theCustomer.get();
-            }
-        }
-
-        return null;
-    }
-
-    @Override
-    public User findByEmailCustomer(String customerEmail) {
-
-        Optional<User> theCustomer = userRepository.findByEmailCustomer(customerEmail);
-
-        if(!theCustomer.isPresent()) {
-            throw new ResourceNotFoundException("Not found user with email=" + customerEmail);
-        } else {
-            if(theCustomer.get().getEnabled() == 1) {
-                return theCustomer.get();
-            }
-        }
-
-        return null;
-    }
-
-    @Override
-    public User findByUsernameCustomer(String username) {
-        Optional<User> theCustomer = userRepository.findByUsernameCustomer(username);
-
-        if(!theCustomer.isPresent()) {
-            throw new ResourceNotFoundException("Not found user with username=" + username);
         } else {
             if(theCustomer.get().getEnabled() == 1) {
                 return theCustomer.get();
@@ -476,6 +445,74 @@ public class UserService implements IUserService {
         } else {
             return new MessageResponse("Email not in database", HttpStatus.NOT_FOUND, LocalDateTime.now());
         }
+    }
+
+    @Override
+    public Page<User> findByEnabledEmployee(Integer enabled, Pageable pagingSort) {
+        Page<User> employeePage =  userRepository.findByEnabledAndIsAccCustomer(enabled, false, pagingSort);
+
+        for(User employee : employeePage.getContent()) {
+            employee.setProfilePicture(Base64Utils.encodeToString(employee.getProfilePictureArr()));
+        }
+        return  employeePage;
+    }
+
+    @Override
+    public Page<User> findByUserNameContainingAndEnabledEmployee(String userName, Integer enabled, Pageable pagingSort) {
+        Page<User> employeePage =  userRepository.findByUserNameContainingAndEnabledAndIsAccCustomer(userName ,enabled, false, pagingSort);
+
+        for(User employee : employeePage.getContent()) {
+            employee.setProfilePicture(Base64Utils.encodeToString(employee.getProfilePictureArr()));
+        }
+        return  employeePage;
+    }
+
+    @Override
+    public Page<User> findByEnabledCustomer(Integer enabled, Pageable pagingSort) {
+        Page<User> customerPage =  userRepository.findByEnabledAndIsAccCustomer(enabled, true, pagingSort);
+
+        for(User customer : customerPage.getContent()) {
+            customer.setProfilePicture(Base64Utils.encodeToString(customer.getProfilePictureArr()));
+        }
+        return  customerPage;
+    }
+
+    @Override
+    public Page<User> findByUserNameContainingAndEnabledCustomer(String userName, Integer enabled, Pageable pagingSort) {
+        Page<User> customerPage =  userRepository.findByUserNameContainingAndEnabledAndIsAccCustomer(userName, enabled, true, pagingSort);
+
+        for(User customer : customerPage.getContent()) {
+            customer.setProfilePicture(Base64Utils.encodeToString(customer.getProfilePictureArr()));
+        }
+        return  customerPage;
+    }
+
+    @Override
+    public MessageResponse activeCustomer(String userName) {
+        Optional<User> customer = userRepository.findByUserNameAndIsAccCustomer(userName, true);
+        if(!customer.isPresent()) {
+            return new MessageResponse("Not find customer with username= " + userName, HttpStatus.NOT_FOUND, LocalDateTime.now());
+        }
+        if(customer.get().getEnabled() == 1){
+            return new MessageResponse("Customer has been active", HttpStatus.BAD_REQUEST, LocalDateTime.now());
+        }
+        customer.get().setEnabled(1);
+        userRepository.save(customer.get());
+        return new MessageResponse("Enable customer successfully!", HttpStatus.OK, LocalDateTime.now());
+    }
+
+    @Override
+    public MessageResponse activeEmployee(String userName) {
+        Optional<User> employee = userRepository.findByUserNameAndIsAccCustomer(userName, false);
+        if(!employee.isPresent()) {
+            return new MessageResponse("Not find employee with username= " + userName, HttpStatus.NOT_FOUND, LocalDateTime.now());
+        }
+        if(employee.get().getEnabled() == 1){
+            return new MessageResponse("Employee has been active", HttpStatus.BAD_REQUEST, LocalDateTime.now());
+        }
+        employee.get().setEnabled(1);
+        userRepository.save(employee.get());
+        return new MessageResponse("Enable employee successfully!", HttpStatus.OK, LocalDateTime.now());
     }
 
     private void sendResetPasswordEmail(User user, String siteURL, String randomCode) throws MessagingException, UnsupportedEncodingException{

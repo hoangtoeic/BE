@@ -29,9 +29,10 @@ public class CustomerAPI {
 
     @GetMapping("")
     public ResponseEntity<Page<User>> findAll(@RequestParam(name = "q", required = false) String userName,
-                                                 @RequestParam(defaultValue = "0") int page,
-                                                 @RequestParam(defaultValue = "20") int limit,
-                                                 @RequestParam(defaultValue = "id,ASC") String[] sort){
+                                              @RequestParam(name = "enabled", required = false) Integer enabled,
+                                              @RequestParam(defaultValue = "0") int page,
+                                              @RequestParam(defaultValue = "20") int limit,
+                                              @RequestParam(defaultValue = "id,ASC") String[] sort){
 
         try {
 
@@ -42,6 +43,18 @@ public class CustomerAPI {
                 customerPage = customerService.findAllPageAndSortCustomer(pagingSort);
             } else {
                 customerPage = customerService.findByUserNameContainingCustomer(userName, pagingSort);
+            }
+            if(userName == null && enabled == null) {
+                customerPage = customerService.findAllPageAndSortCustomer(pagingSort);
+            } else {
+                if(enabled == null){
+                    customerPage = customerService.findByUserNameContainingCustomer(userName, pagingSort);
+                } else if (userName == null) {
+                    customerPage = customerService.findByEnabledCustomer(enabled, pagingSort);
+                } else {
+                    customerPage = customerService.findByUserNameContainingAndEnabledCustomer(userName, enabled, pagingSort);
+                }
+
             }
 
             return new ResponseEntity<>(customerPage, HttpStatus.OK);
@@ -91,5 +104,12 @@ public class CustomerAPI {
     @GetMapping("/count")
     public ResponseEntity<?> count(){
         return new ResponseEntity<>(customerService.countCustomer(), HttpStatus.OK);
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<MessageResponse> activeCustomer(@RequestParam(name = "username", required = true) String userName){
+
+        MessageResponse messageResponse = customerService.activeCustomer(userName);
+        return new ResponseEntity<>(messageResponse, messageResponse.getStatus());
     }
 }

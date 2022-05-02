@@ -54,13 +54,21 @@ public interface IUserService extends UserDetailsService {
 
     User findByIdCustomer(Long customerId);
 
-    User findByEmailCustomer(String customerEmail);
-
-    User findByUsernameCustomer(String username);
-
     MessageResponse resetPassword(PasswordResetRequest request, String getSiteURL) throws MessagingException, UnsupportedEncodingException;
 
     MessageResponse changeResetPassword(PasswordResetChangeRequest request);
 
     MessageResponse changePassword(PasswordChangeRequest request);
+
+    Page<User> findByEnabledEmployee(Integer enabled, Pageable pagingSort);
+
+    Page<User> findByUserNameContainingAndEnabledEmployee(String userName, Integer enabled, Pageable pagingSort);
+
+    Page<User> findByEnabledCustomer(Integer enabled, Pageable pagingSort);
+
+    Page<User> findByUserNameContainingAndEnabledCustomer(String userName, Integer enabled, Pageable pagingSort);
+
+    MessageResponse activeCustomer(String userName);
+
+    MessageResponse activeEmployee(String userName);
 }
