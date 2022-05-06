@@ -8,7 +8,7 @@
 1. Warm up:  
     Có thể có 1 trò chơi khởi động
 2. Giới thiệu Stakeholders:
-    giới thiệ thầy
+    giới thiệu thầy
 3. Trình bày về Product backlog:
     * Product Owner nêu về các item trong danh sách sau (các item được chọn cho sprint):
     <a href="https://ibb.co/qn120Q5"><img src="https://i.ibb.co/X4JGyR8/1.png" alt="1" border="0"></a>
