@@ -129,7 +129,7 @@ public class CartAPI {
 
                         paypalTransactionService.addPaypalTransaction(payment.getId(), cartDto);
 
-                        return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
+                        return new ResponseEntity<>(links.getHref(), HttpStatus.OK);
 
                     }
                 }
