@@ -86,8 +86,8 @@ public class CategoryAPI {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable("id") Long theId){
 
-        categoryService.deleteCategory(theId);
-        return new ResponseEntity<>(new MessageResponse("Deleted successfully!", HttpStatus.OK, LocalDateTime.now()), HttpStatus.OK);
+        MessageResponse messageResponse = categoryService.deleteCategory(theId);
+        return new ResponseEntity<>(messageResponse, messageResponse.getStatus());
     }
 
 }

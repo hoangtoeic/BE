@@ -5,12 +5,14 @@ import com.cnpm.ecommerce.backend.app.dto.MessageResponse;
 import com.cnpm.ecommerce.backend.app.entity.User;
 import com.cnpm.ecommerce.backend.app.service.IUserService;
 import com.cnpm.ecommerce.backend.app.utils.CommonUtils;
+import com.cnpm.ecommerce.backend.app.validationgroups.OnUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -26,10 +28,11 @@ public class CustomerAPI {
     private IUserService customerService;
 
     @GetMapping("")
-    public ResponseEntity<List<User>> findAll(@RequestParam(name = "q", required = false) String userName,
-                                                 @RequestParam(defaultValue = "0") int page,
-                                                 @RequestParam(defaultValue = "20") int limit,
-                                                 @RequestParam(defaultValue = "id,ASC") String[] sort){
+    public ResponseEntity<Page<User>> findAll(@RequestParam(name = "q", required = false) String userName,
+                                              @RequestParam(name = "enabled", required = false) Integer enabled,
+                                              @RequestParam(defaultValue = "0") int page,
+                                              @RequestParam(defaultValue = "20") int limit,
+                                              @RequestParam(defaultValue = "id,ASC") String[] sort){
 
         try {
 
@@ -41,8 +44,20 @@ public class CustomerAPI {
             } else {
                 customerPage = customerService.findByUserNameContainingCustomer(userName, pagingSort);
             }
+            if(userName == null && enabled == null) {
+                customerPage = customerService.findAllPageAndSortCustomer(pagingSort);
+            } else {
+                if(enabled == null){
+                    customerPage = customerService.findByUserNameContainingCustomer(userName, pagingSort);
+                } else if (userName == null) {
+                    customerPage = customerService.findByEnabledCustomer(enabled, pagingSort);
+                } else {
+                    customerPage = customerService.findByUserNameContainingAndEnabledCustomer(userName, enabled, pagingSort);
+                }
 
-            return new ResponseEntity<>(customerPage.getContent(), HttpStatus.OK);
+            }
+
+            return new ResponseEntity<>(customerPage, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -68,7 +83,7 @@ public class CustomerAPI {
 
     @PutMapping("/{id}")
     public ResponseEntity<MessageResponse> updateCustomer(@PathVariable("id") Long theId,
-                                                          @Valid @RequestBody CustomerDTO theCustomerDto, BindingResult bindingResult){
+                                                          @Validated(OnUpdate.class) @RequestBody CustomerDTO theCustomerDto, BindingResult bindingResult){
 
         if(bindingResult.hasErrors()){
             return new ResponseEntity<MessageResponse>(new MessageResponse("Invalid value for update customer", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);
@@ -89,5 +104,12 @@ public class CustomerAPI {
     @GetMapping("/count")
     public ResponseEntity<?> count(){
         return new ResponseEntity<>(customerService.countCustomer(), HttpStatus.OK);
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<MessageResponse> activeCustomer(@RequestParam(name = "username", required = true) String userName){
+
+        MessageResponse messageResponse = customerService.activeCustomer(userName);
+        return new ResponseEntity<>(messageResponse, messageResponse.getStatus());
     }
 }

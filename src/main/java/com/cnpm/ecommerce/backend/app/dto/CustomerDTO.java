@@ -1,5 +1,6 @@
 package com.cnpm.ecommerce.backend.app.dto;
 
+import com.cnpm.ecommerce.backend.app.validationgroups.OnCreate;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.cnpm.ecommerce.backend.app.entity.Feedback;
 import com.cnpm.ecommerce.backend.app.entity.Role;
@@ -18,7 +19,7 @@ public class CustomerDTO extends AbstractDTO{
     @NotNull(message = "is required")
     private String userName;
 
-    @NotNull(message = "is required")
+    @NotNull(message = "is required", groups = {OnCreate.class})
     private String password;
 
     @NotNull(message = "is required")
@@ -34,6 +35,7 @@ public class CustomerDTO extends AbstractDTO{
     @NotNull(message = "is required")
     private String email;
 
+    @NotNull(message = "is required")
     private int gender;
 
     private String profilePicture;

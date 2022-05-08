@@ -3,6 +3,8 @@ package com.cnpm.ecommerce.backend.app.dto;
 import com.cnpm.ecommerce.backend.app.entity.Category;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
@@ -22,11 +24,17 @@ public class ProductDTO extends AbstractDTO {
     private BigDecimal price;
 
     @NotNull(message = "Please enter unit in stock")
-    private int unitInStock;
+    private Integer unitInStock;
 
     private String thumbnail;
 
     private Category category;
+
+    @Min(0)
+    @Max(99)
+    private Integer discount;
+
+    private BigDecimal ratingAverage;
 
     @NotNull(message = "Please select category")
     private Long categoryId;
@@ -71,11 +79,11 @@ public class ProductDTO extends AbstractDTO {
         this.price = price;
     }
 
-    public int getUnitInStock() {
+    public Integer getUnitInStock() {
         return unitInStock;
     }
 
-    public void setUnitInStock(int unitInStock) {
+    public void setUnitInStock(Integer unitInStock) {
         this.unitInStock = unitInStock;
     }
 
@@ -102,6 +110,14 @@ public class ProductDTO extends AbstractDTO {
     public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
     }
+
+    public Integer getDiscount() { return discount; }
+
+    public void setDiscount(Integer discount) { this.discount = discount; }
+
+    public BigDecimal getRatingAverage() { return ratingAverage; }
+
+    public void setRatingAverage(BigDecimal ratingAverage) { this.ratingAverage = ratingAverage; }
 
     public ProductDTO() {
     }

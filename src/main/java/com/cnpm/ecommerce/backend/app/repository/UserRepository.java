@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,4 +39,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT count(u) FROM User u WHERE u.isAccCustomer=true")
     Long countCustomer();
+
+    Optional<User> findByEmail(String email);
+
+    Optional<User> findByUserNameAndIsAccCustomer(String username, Boolean isAccCustomer);
+
+    Page<User> findByEnabledAndIsAccCustomer(Integer enabled, Boolean b, Pageable pagingSort);
+
+    Page<User> findByUserNameContainingAndEnabledAndIsAccCustomer(String userName, Integer enabled, Boolean isAccCustomer, Pageable pageable);
 }

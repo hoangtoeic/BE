@@ -1,20 +1,24 @@
 package com.cnpm.ecommerce.backend.app.service;
 
-import com.cnpm.ecommerce.backend.app.dto.CustomerDTO;
-import com.cnpm.ecommerce.backend.app.dto.EmployeeDTO;
-import com.cnpm.ecommerce.backend.app.dto.MessageResponse;
+import com.cnpm.ecommerce.backend.app.dto.*;
+import com.cnpm.ecommerce.backend.app.entity.PasswordResetToken;
 import com.cnpm.ecommerce.backend.app.entity.Role;
 import com.cnpm.ecommerce.backend.app.entity.User;
 import com.cnpm.ecommerce.backend.app.exception.ResourceNotFoundException;
 import com.cnpm.ecommerce.backend.app.mapper.UserMapper;
+import com.cnpm.ecommerce.backend.app.repository.PasswordResetTokenRepository;
 import com.cnpm.ecommerce.backend.app.repository.RoleRepository;
 import com.cnpm.ecommerce.backend.app.repository.UserRepository;
 import com.cnpm.ecommerce.backend.app.utils.UserDetailsImpl;
+import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -22,6 +26,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Base64Utils;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import java.io.UnsupportedEncodingException;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -38,6 +46,15 @@ public class UserService implements IUserService {
     @Autowired
     @Qualifier("passwordEncoder")
     private BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Value("${bezkoder.app.jwtResetExpirationMs}")
+    private Long resetTokenDurationMs;
 
     @Autowired
     public void setPasswordEncoder(BCryptPasswordEncoder passwordEncoder) {
@@ -94,7 +111,11 @@ public class UserService implements IUserService {
             theEmployee.setPhoneNumber(theEmployeeDto.getPhoneNumber());
             theEmployee.setAddress(theEmployeeDto.getAddress());
             theEmployee.setGender(theEmployeeDto.getGender());
-            theEmployee.setProfilePictureArr(Base64Utils.decodeFromString(theEmployeeDto.getProfilePicture()));
+            if(theEmployeeDto.getProfilePicture() != null ) {
+                theEmployee.setProfilePictureArr(Base64Utils.decodeFromString(theEmployeeDto.getProfilePicture()));
+            } else {
+                theEmployee.setProfilePictureArr(new byte[0]);
+            }
             theEmployee.setEnabled(1);
             theEmployee.setAccCustomer(false);
 
@@ -114,7 +135,7 @@ public class UserService implements IUserService {
 
             userRepository.save(theEmployee);
 
-            return new MessageResponse("Create employee successfully!", HttpStatus.ACCEPTED, LocalDateTime.now());
+            return new MessageResponse("Create employee successfully!", HttpStatus.CREATED, LocalDateTime.now());
         }
     }
 
@@ -132,7 +153,11 @@ public class UserService implements IUserService {
             theEmployee.get().setPhoneNumber(theEmployeeDto.getPhoneNumber());
             theEmployee.get().setAddress(theEmployeeDto.getAddress());
             theEmployee.get().setGender(theEmployeeDto.getGender());
-            theEmployee.get().setProfilePictureArr(Base64Utils.decodeFromString(theEmployeeDto.getProfilePicture()));
+            if(theEmployeeDto.getProfilePicture() != null ) {
+                theEmployee.get().setProfilePictureArr(Base64Utils.decodeFromString(theEmployeeDto.getProfilePicture()));
+            }else {
+                theEmployee.get().setProfilePictureArr(new byte[0]);
+            }
             theEmployee.get().setAccCustomer(false);
 
             Set<Role> roles;
@@ -177,18 +202,24 @@ public class UserService implements IUserService {
     public Page<User> findAllPageAndSortEmployee(Pageable pagingSort) {
         Page<User> employeePage =  userRepository.findByIsAccCustomer(false, pagingSort);
 
-        for(User employee : employeePage.getContent()) {
-                employee.setProfilePicture(Base64Utils.encodeToString(employee.getProfilePictureArr()));
-        }
-        return  employeePage;
+        return getUsers(employeePage);
     }
 
     @Override
     public Page<User> findByUserNameContainingEmployee(String userName, Pageable pagingSort) {
         Page<User> employeePage =  userRepository.findByUserNameContainingAndIsAccCustomer(userName,false, pagingSort);
 
+        return getUsers(employeePage);
+    }
+
+    private Page<User> getUsers(Page<User> employeePage) {
         for(User employee : employeePage.getContent()) {
                 employee.setProfilePicture(Base64Utils.encodeToString(employee.getProfilePictureArr()));
+            if(employee.getRoles().size() == 2) {
+                employee.setRoleCode("ROLE_ADMIN");
+            } else {
+                employee.setRoleCode("ROLE_EMPLOYEE");
+            }
         }
         return  employeePage;
     }
@@ -245,7 +276,11 @@ public class UserService implements IUserService {
             theCustomer.setPhoneNumber(theCustomerDto.getPhoneNumber());
             theCustomer.setAddress(theCustomerDto.getAddress());
             theCustomer.setGender(theCustomerDto.getGender());
-            theCustomer.setProfilePictureArr(Base64Utils.decodeFromString(theCustomerDto.getProfilePicture()));
+            if(theCustomerDto.getProfilePicture() != null ) {
+                theCustomer.setProfilePictureArr(Base64Utils.decodeFromString(theCustomerDto.getProfilePicture()));
+            } else {
+                theCustomer.setProfilePictureArr(new byte[0]);
+            }
             theCustomer.setEnabled(1);
             theCustomer.setAccCustomer(true);
             Set<Role> roles = new HashSet<>(Arrays.asList(roleRepository.findByCode("ROLE_CUSTOMER")));
@@ -253,7 +288,7 @@ public class UserService implements IUserService {
 
             userRepository.save(theCustomer);
 
-            return new MessageResponse("Create customer successfully!", HttpStatus.ACCEPTED, LocalDateTime.now());
+            return new MessageResponse("Create customer successfully!", HttpStatus.CREATED, LocalDateTime.now());
         }
 
     }
@@ -272,7 +307,12 @@ public class UserService implements IUserService {
             theCustomer.get().setPhoneNumber(theCustomerDto.getPhoneNumber());
             theCustomer.get().setAddress(theCustomerDto.getAddress());
             theCustomer.get().setGender(theCustomerDto.getGender());
-            theCustomer.get().setProfilePictureArr(Base64Utils.decodeFromString(theCustomerDto.getProfilePicture()));
+            if(theCustomerDto.getProfilePicture() != null) {
+                theCustomer.get().setProfilePictureArr(Base64Utils.decodeFromString(theCustomerDto.getProfilePicture()));
+            }
+            else {
+                theCustomer.get().setProfilePictureArr(new byte[0]);
+            }
             theCustomer.get().setAccCustomer(true);
 
             userRepository.save(theCustomer.get());
@@ -295,22 +335,22 @@ public class UserService implements IUserService {
 
     @Override
     public Page<User> findAllPageAndSortCustomer(Pageable pagingSort) {
-        Page<User> employeePage =  userRepository.findByIsAccCustomer(true,pagingSort);
+        Page<User> customerPage =  userRepository.findByIsAccCustomer(true,pagingSort);
 
-        for(User employee : employeePage.getContent()) {
-                employee.setProfilePicture(Base64Utils.encodeToString(employee.getProfilePictureArr()));
+        for(User customer : customerPage.getContent()) {
+            customer.setProfilePicture(Base64Utils.encodeToString(customer.getProfilePictureArr()));
         }
-        return  employeePage;
+        return  customerPage;
     }
 
     @Override
     public Page<User> findByUserNameContainingCustomer(String userName, Pageable pagingSort) {
-        Page<User> employeePage =  userRepository.findByUserNameContainingAndIsAccCustomer(userName, true, pagingSort);
+        Page<User> customerPage =  userRepository.findByUserNameContainingAndIsAccCustomer(userName, true, pagingSort);
 
-        for(User employee : employeePage.getContent()) {
-                employee.setProfilePicture(Base64Utils.encodeToString(employee.getProfilePictureArr()));
+        for(User customer : customerPage.getContent()) {
+            customer.setProfilePicture(Base64Utils.encodeToString(customer.getProfilePictureArr()));
         }
-        return  employeePage;
+        return  customerPage;
     }
 
     @Override
@@ -331,6 +371,177 @@ public class UserService implements IUserService {
         }
 
         return null;
+    }
+
+    @Override
+    public MessageResponse resetPassword(PasswordResetRequest request, String siteURL) throws MessagingException, UnsupportedEncodingException{
+        Optional<User> user = userRepository.findByEmail(request.getEmail());
+
+        if(user.isPresent()){
+            String randomCode = RandomString.make(64);
+
+            sendResetPasswordEmail(user.get(), siteURL, randomCode);
+
+            PasswordResetToken passwordResetToken = new PasswordResetToken();
+            passwordResetToken.setToken(randomCode);
+            passwordResetToken.setUser(user.get());
+            passwordResetToken.setExpiryDate(Instant.now().plusMillis(resetTokenDurationMs));
+
+            passwordResetTokenRepository.save(passwordResetToken);
+
+            return new MessageResponse("Please check mail to reset password.", HttpStatus.OK, LocalDateTime.now());
+        } else {
+            return new MessageResponse("Email not in database", HttpStatus.NOT_FOUND, LocalDateTime.now());
+        }
+    }
+
+    @Override
+    public MessageResponse changeResetPassword(PasswordResetChangeRequest request) {
+
+        Optional<User> user = userRepository.findByEmail(request.getEmail());
+
+        if(user.isPresent()){
+
+            PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByUserId(user.get().getId());
+
+            if(passwordResetToken != null) {
+                passwordResetTokenRepository.delete(passwordResetToken);
+
+                String encodedPassword = passwordEncoder.encode(request.getPassword());
+                user.get().setPassword(encodedPassword);
+                user.get().setModifiedDate(new Date());
+
+                userRepository.save(user.get());
+                return new MessageResponse("Reset password successfully!", HttpStatus.OK, LocalDateTime.now());
+            } else {
+                return new MessageResponse("Password has been reset.", HttpStatus.BAD_REQUEST, LocalDateTime.now());
+            }
+
+
+        } else {
+            return new MessageResponse("Email not in database", HttpStatus.NOT_FOUND, LocalDateTime.now());
+        }
+    }
+
+    @Override
+    public MessageResponse changePassword(PasswordChangeRequest request) {
+
+        Optional<User> user = userRepository.findByEmail(request.getEmail());
+
+        if(user.isPresent()){
+
+            if(passwordEncoder.matches(request.getOldPassword(), user.get().getPassword())){
+                String encodedPassword = passwordEncoder.encode(request.getPassword());
+                user.get().setPassword(encodedPassword);
+                user.get().setModifiedDate(new Date());
+
+                userRepository.save(user.get());
+
+                return new MessageResponse("Update password successfully!", HttpStatus.OK, LocalDateTime.now());
+            } else {
+                return new MessageResponse("The old password is incorrect!", HttpStatus.BAD_REQUEST, LocalDateTime.now());
+            }
+
+        } else {
+            return new MessageResponse("Email not in database", HttpStatus.NOT_FOUND, LocalDateTime.now());
+        }
+    }
+
+    @Override
+    public Page<User> findByEnabledEmployee(Integer enabled, Pageable pagingSort) {
+        Page<User> employeePage =  userRepository.findByEnabledAndIsAccCustomer(enabled, false, pagingSort);
+
+        for(User employee : employeePage.getContent()) {
+            employee.setProfilePicture(Base64Utils.encodeToString(employee.getProfilePictureArr()));
+        }
+        return  employeePage;
+    }
+
+    @Override
+    public Page<User> findByUserNameContainingAndEnabledEmployee(String userName, Integer enabled, Pageable pagingSort) {
+        Page<User> employeePage =  userRepository.findByUserNameContainingAndEnabledAndIsAccCustomer(userName ,enabled, false, pagingSort);
+
+        for(User employee : employeePage.getContent()) {
+            employee.setProfilePicture(Base64Utils.encodeToString(employee.getProfilePictureArr()));
+        }
+        return  employeePage;
+    }
+
+    @Override
+    public Page<User> findByEnabledCustomer(Integer enabled, Pageable pagingSort) {
+        Page<User> customerPage =  userRepository.findByEnabledAndIsAccCustomer(enabled, true, pagingSort);
+
+        for(User customer : customerPage.getContent()) {
+            customer.setProfilePicture(Base64Utils.encodeToString(customer.getProfilePictureArr()));
+        }
+        return  customerPage;
+    }
+
+    @Override
+    public Page<User> findByUserNameContainingAndEnabledCustomer(String userName, Integer enabled, Pageable pagingSort) {
+        Page<User> customerPage =  userRepository.findByUserNameContainingAndEnabledAndIsAccCustomer(userName, enabled, true, pagingSort);
+
+        for(User customer : customerPage.getContent()) {
+            customer.setProfilePicture(Base64Utils.encodeToString(customer.getProfilePictureArr()));
+        }
+        return  customerPage;
+    }
+
+    @Override
+    public MessageResponse activeCustomer(String userName) {
+        Optional<User> customer = userRepository.findByUserNameAndIsAccCustomer(userName, true);
+        if(!customer.isPresent()) {
+            return new MessageResponse("Not find customer with username= " + userName, HttpStatus.NOT_FOUND, LocalDateTime.now());
+        }
+        if(customer.get().getEnabled() == 1){
+            return new MessageResponse("Customer has been active", HttpStatus.BAD_REQUEST, LocalDateTime.now());
+        }
+        customer.get().setEnabled(1);
+        userRepository.save(customer.get());
+        return new MessageResponse("Enable customer successfully!", HttpStatus.OK, LocalDateTime.now());
+    }
+
+    @Override
+    public MessageResponse activeEmployee(String userName) {
+        Optional<User> employee = userRepository.findByUserNameAndIsAccCustomer(userName, false);
+        if(!employee.isPresent()) {
+            return new MessageResponse("Not find employee with username= " + userName, HttpStatus.NOT_FOUND, LocalDateTime.now());
+        }
+        if(employee.get().getEnabled() == 1){
+            return new MessageResponse("Employee has been active", HttpStatus.BAD_REQUEST, LocalDateTime.now());
+        }
+        employee.get().setEnabled(1);
+        userRepository.save(employee.get());
+        return new MessageResponse("Enable employee successfully!", HttpStatus.OK, LocalDateTime.now());
+    }
+
+    private void sendResetPasswordEmail(User user, String siteURL, String randomCode) throws MessagingException, UnsupportedEncodingException{
+        String toAddress = user.getEmail();
+        String fromAddress = "cnpmt12022@gmail.com";
+        String senderName = "ABC Store";
+        String subject = "Please confirm to reset password";
+        String content = "Dear [[name]],<br>"
+                + "Please click the link below to reset your password:<br>"
+                + "<h3><a href=\"[[URL]]\" target=\"_self\">RESET</a></h3>"
+                + "Thank you,<br>"
+                + "ABC Store.";
+
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+
+        helper.setFrom(fromAddress, senderName);
+        helper.setTo(toAddress);
+        helper.setSubject(subject);
+
+        content = content.replace("[[name]]", user.getName());
+        String verifyURL = siteURL + "/api/password/confirm?token=" + randomCode;
+
+        content = content.replace("[[URL]]", verifyURL);
+
+        helper.setText(content, true);
+
+        mailSender.send(message);
+
     }
 
     @Override

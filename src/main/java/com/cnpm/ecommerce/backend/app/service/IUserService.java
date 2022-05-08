@@ -1,13 +1,13 @@
 package com.cnpm.ecommerce.backend.app.service;
 
-import com.cnpm.ecommerce.backend.app.dto.CustomerDTO;
-import com.cnpm.ecommerce.backend.app.dto.EmployeeDTO;
-import com.cnpm.ecommerce.backend.app.dto.MessageResponse;
+import com.cnpm.ecommerce.backend.app.dto.*;
 import com.cnpm.ecommerce.backend.app.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import javax.mail.MessagingException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 public interface IUserService extends UserDetailsService {
@@ -53,4 +53,22 @@ public interface IUserService extends UserDetailsService {
     Long countCustomer();
 
     User findByIdCustomer(Long customerId);
+
+    MessageResponse resetPassword(PasswordResetRequest request, String getSiteURL) throws MessagingException, UnsupportedEncodingException;
+
+    MessageResponse changeResetPassword(PasswordResetChangeRequest request);
+
+    MessageResponse changePassword(PasswordChangeRequest request);
+
+    Page<User> findByEnabledEmployee(Integer enabled, Pageable pagingSort);
+
+    Page<User> findByUserNameContainingAndEnabledEmployee(String userName, Integer enabled, Pageable pagingSort);
+
+    Page<User> findByEnabledCustomer(Integer enabled, Pageable pagingSort);
+
+    Page<User> findByUserNameContainingAndEnabledCustomer(String userName, Integer enabled, Pageable pagingSort);
+
+    MessageResponse activeCustomer(String userName);
+
+    MessageResponse activeEmployee(String userName);
 }

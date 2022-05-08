@@ -1,6 +1,12 @@
 package com.cnpm.ecommerce.backend.app.dto;
 
 
+import com.cnpm.ecommerce.backend.app.enums.OrderStatus;
+import com.cnpm.ecommerce.backend.app.enums.PaymentMethod;
+import com.cnpm.ecommerce.backend.app.validation.EnumNamePattern;
+import com.cnpm.ecommerce.backend.app.validation.ValueOfEnum;
+import com.cnpm.ecommerce.backend.app.validationgroups.OnUpdate;
+
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -13,22 +19,19 @@ public class CartDTO extends AbstractDTO {
 
     private String note;
 
+    @NotNull(message = "is required")
     private BigDecimal totalCost;
 
     @NotNull(message = "is required")
     private String address;
 
+    @NotNull(message = "is required", groups = {OnUpdate.class})
+    @EnumNamePattern(regexp = "CANCELLED|REFUNDED|COMPLETED|PAID|DECLINED|PENDING")
+    private OrderStatus status;
 
-    private List<CartItemDTO> cartItems = new ArrayList<>();
-
-    public List<CartItemDTO> getCartItems() {
-        return cartItems;
-    }
-
-    public void setCartItems(List<CartItemDTO> cartItems) {
-        this.cartItems.clear();
-        this.cartItems.addAll(cartItems);
-    }
+    @NotNull(message = "is required")
+    @EnumNamePattern(regexp = "CASH|PAYPAL")
+    private PaymentMethod paymentMethod;
 
     public long getCustomerId() {
         return customerId;
@@ -60,4 +63,14 @@ public class CartDTO extends AbstractDTO {
     public void setAddress(String address) {
         this.address = address;
     }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {  this.status = status; }
+
+    public PaymentMethod getPaymentMethod() { return paymentMethod; }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) { this.paymentMethod = paymentMethod; }
 }

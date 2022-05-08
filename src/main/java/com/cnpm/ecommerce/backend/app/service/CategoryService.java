@@ -55,7 +55,11 @@ public class CategoryService implements ICategoryService{
         theCategory.setCreatedBy(theCategoryDto.getCreatedBy());
         theCategory.setName(theCategoryDto.getName());
         theCategory.setDescription(theCategoryDto.getDescription());
-        theCategory.setThumbnailArr(Base64Utils.decodeFromString(theCategoryDto.getThumbnail()));
+        if(theCategoryDto.getThumbnail() != null) {
+            theCategory.setThumbnailArr(Base64Utils.decodeFromString(theCategoryDto.getThumbnail()));
+        } else {
+            theCategory.setThumbnailArr(new byte[0]);
+        }
 
         categoryRepository.save(theCategory);
 
@@ -80,7 +84,11 @@ public class CategoryService implements ICategoryService{
             theCategory.get().setModifiedBy(theCategoryDto.getModifiedBy());
             theCategory.get().setName(theCategoryDto.getName());
             theCategory.get().setDescription(theCategoryDto.getDescription());
-            theCategory.get().setThumbnailArr(Base64Utils.decodeFromString(theCategoryDto.getThumbnail()));
+            if(theCategoryDto.getThumbnail() != null) {
+                theCategory.get().setThumbnailArr(Base64Utils.decodeFromString(theCategoryDto.getThumbnail()));
+            } else {
+                theCategory.get().setThumbnailArr(new byte[0]);
+            }
 
             categoryRepository.save(theCategory.get());
         }
@@ -89,11 +97,16 @@ public class CategoryService implements ICategoryService{
     }
 
     @Override
-    public void deleteCategory(Long theId) {
+    public MessageResponse deleteCategory(Long theId) {
         Category theCategory = categoryRepository.findById(theId).orElseThrow(
                 () -> new ResourceNotFoundException("Not found category with ID=" + theId));
 
+        if(categoryRepository.count() > 0) {
+            return new MessageResponse("Can't delete category, just delete all product in this category", HttpStatus.BAD_REQUEST,
+                    LocalDateTime.now());
+        }
         categoryRepository.delete(theCategory);
+        return new MessageResponse("Deleted successfully!", HttpStatus.OK, LocalDateTime.now());
     }
 
     @Override
