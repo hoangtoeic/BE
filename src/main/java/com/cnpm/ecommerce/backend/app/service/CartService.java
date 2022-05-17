@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Base64Utils;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -52,6 +53,8 @@ public class CartService implements ICartService{
             for(CartItem cartItem : cart.getCartItems()) {
                 cartItem.setCartIds(cart.getId());
                 cartItem.setProductIds(cartItem.getProduct().getId());
+                cartItem.setProductName(cartItem.getProduct().getName());
+                cartItem.setProductThumbnail(Base64Utils.encodeToString(cartItem.getProduct().getThumbnailArr()));
             }
         }
         return  cartPage;
