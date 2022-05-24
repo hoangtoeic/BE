@@ -51,22 +51,23 @@ public class CartAPI {
     private IPaypalTransactionService paypalTransactionService;
 
     @GetMapping()
-    public ResponseEntity<?> findAll(@RequestParam(value = "id", required = false) Long id,
-                                              @RequestParam(name = "customerId", required = false) Long customerId,
-                                              @RequestParam(defaultValue = "0") int page,
-                                               @RequestParam(defaultValue = "20") int limit,
-                                               @RequestParam(defaultValue = "id,ASC") String[] sort){
+    public ResponseEntity<?> findAll(@RequestParam(name = "customerName", required = false) String customerName,
+                                      @RequestParam(name = "paymentType", required = false) String paymentType,
+                                     @RequestParam(name = "status", required = false) String status,
+                                      @RequestParam(defaultValue = "0") int page,
+                                       @RequestParam(defaultValue = "20") int limit,
+                                       @RequestParam(defaultValue = "id,ASC") String[] sort){
         try {
             Pageable pagingSort = CommonUtils.sortItem(page, limit, sort);
             Page<Cart> cartPage = null;
 
-            if(id == null && customerId == null) {
+            if(customerName == null && paymentType == null && status == null) {
                 cartPage = cartService.findAllPageAndSort(pagingSort);
             } else {
-                if(customerId == null) {
-                    cartPage = cartService.findByIdContaining(id, pagingSort);
-                } else if(id == null) {
-                    cartPage = cartService.findByCustomerIdPageAndSort(customerId, pagingSort);
+                if(customerName == null) {
+                    cartPage = cartService.findByPaymentAndStatus(paymentType, status, pagingSort);
+                } else {
+                    cartPage = cartService.findByCustomerNamePaymentAndStatusPageAndSort(customerName, paymentType, status, pagingSort);
                 }
 
             }
