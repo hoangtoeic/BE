@@ -35,6 +35,9 @@ public class Cart extends BaseEntity{
     @Column(name = "payment_method")
     private PaymentMethod paymentMethod;
 
+    @Column(name = "customer_name")
+    private String customerName;
+
     @Transient
     @JsonProperty(value = "customerId")
     private Long customerIds;
@@ -95,4 +98,8 @@ public class Cart extends BaseEntity{
     public Long getCustomerIds() { return customerIds; }
 
     public void setCustomerIds(Long customerIds) { this.customerIds = customerIds; }
+
+    public String getCustomerName() { return customerName; }
+
+    public void setCustomerName(String customerName) { this.customerName = customerName; }
 }
