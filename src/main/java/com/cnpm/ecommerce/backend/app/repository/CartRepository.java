@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -21,8 +22,8 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
     Page<Cart> findByCustomerId(Long customerId, Pageable pageable);
 
-    @Query("SELECT SUM(c.totalCost) from Cart c WHERE c.createdDate=?1")
-    BigDecimal getAllRevenueByDay(Date day);
+    @Query("SELECT SUM(c.totalCost) from Cart c WHERE c.createdDate>=?1 AND c.createdDate<?2")
+    BigDecimal getAllRevenueByDay(Timestamp day, Timestamp dayEnd);
 
     Page<Cart> findByStatus(OrderStatus status, Pageable pageable);
 

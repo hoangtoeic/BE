@@ -6,7 +6,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
@@ -16,4 +18,7 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     Page<CartItem> findById(Long id, Pageable pageable);
 
     Page<CartItem> findByCartId(Long cartId, Pageable pageable);
+
+    @Query("SELECT c.product.id AS productId, c.product.name AS productName, SUM(c.quantity) AS quantity from CartItem c WHERE c.createdDate>=?1 AND c.createdDate<?2 GROUP BY c.product.id, c.product.name ORDER BY c.product.id")
+    List<Map<String, Object>> getAllSoldProductByDay(Timestamp date, Timestamp dateEndDate);
 }
