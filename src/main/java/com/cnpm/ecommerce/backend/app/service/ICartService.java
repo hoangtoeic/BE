@@ -24,4 +24,8 @@ public interface ICartService {
     Page<Cart> findByCustomerIdPageAndSort(Long customerId, Pageable pagingSort);
 
     MessageResponse updateStatusCart(long theId, OrderStatusDTO statusDto);
+
+    Page<Cart> findByPaymentAndStatus(String paymentType, String status, Pageable pagingSort);
+
+    Page<Cart> findByCustomerNamePaymentAndStatusPageAndSort(String customerName, String paymentType, String status, Pageable pagingSort);
 }
