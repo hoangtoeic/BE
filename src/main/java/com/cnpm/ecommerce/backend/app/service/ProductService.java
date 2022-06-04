@@ -3,26 +3,29 @@ package com.cnpm.ecommerce.backend.app.service;
 import com.cnpm.ecommerce.backend.app.dto.MessageResponse;
 import com.cnpm.ecommerce.backend.app.dto.ProductDTO;
 import com.cnpm.ecommerce.backend.app.entity.Category;
-import com.cnpm.ecommerce.backend.app.entity.Feedback;
 import com.cnpm.ecommerce.backend.app.entity.Product;
+import com.cnpm.ecommerce.backend.app.entity.recommendRequestObject;
+import com.cnpm.ecommerce.backend.app.entity.recommendResponseObject;
 import com.cnpm.ecommerce.backend.app.exception.ResourceNotFoundException;
-import com.cnpm.ecommerce.backend.app.repository.BrandRepository;
-import com.cnpm.ecommerce.backend.app.repository.FeedbackRepository;
 import com.cnpm.ecommerce.backend.app.repository.ProductRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Base64Utils;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 @Service
 @Transactional
@@ -224,4 +227,79 @@ public class ProductService implements IProductService{
 
         }
     }
+
+    @Override
+    public List<Product> recommendSystem(Long userID)  {
+        List<Long> list = new ArrayList<Long>();
+        list.add(1L);
+        list.add(3L);
+        System.out.println("ArrayList : " + list.toString());
+      //  List<Product> productPage =  productRepository.findProductBylistID(list);
+      //  System.out.println("returnData : " + productPage);
+
+//        final String uri = "https://flask-recommend-system-deploy.herokuapp.com/recommend";
+//
+//        RestTemplate restTemplate = new RestTemplate();
+//
+//        ResponseEntity<String> result = restTemplate.postForEntity(uri, String.class);
+        String productListTypeString = "";
+        RestTemplate restTemplate = new RestTemplate();
+
+        String url = "https://flask-recommend-system-deploy.herokuapp.com/recommend";
+//        String requestJson = "{"+"id:"+5+"}";
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//
+//        HttpEntity<String> entity = new HttpEntity<>(requestJson,headers);
+//        String result = restTemplate.postForObject(url, entity, String.class);
+//
+//
+      List<Integer> tempt = new ArrayList<>();
+      tempt.add(2);
+      tempt.add(6);
+        recommendRequestObject requestObject = new recommendRequestObject();
+        requestObject.setId(3);
+        requestObject.setExceptProductID(tempt);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        HttpEntity<recommendRequestObject> entity = new HttpEntity<recommendRequestObject>(requestObject,headers);
+        try {
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    "https://flask-recommend-system-deploy.herokuapp.com/recommend", HttpMethod.POST, entity, String.class);
+           // recommendResponseObject responseObject = new recommendResponseObject();
+            //responseObject = JSON.parse(response.getBody());
+//            Gson gson = new Gson();
+//            recommendResponseObject responseObject = gson.fromJson(response.getBody(), recommendResponseObject.class);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            recommendResponseObject responseObject = objectMapper.readValue(response.getBody(), recommendResponseObject.class);
+             productListTypeString = responseObject.getProductList();
+            System.out.println("recommendResponseObject:" + productListTypeString);
+        }
+        catch (RuntimeException e) {
+            System.out.println("faild for query recommend system" + e);
+            e.printStackTrace();
+            return null;
+        } catch (JsonMappingException e) {
+            e.printStackTrace();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        // Convert productListTypeString to List<Long>
+
+        Pattern pattern = Pattern.compile("\\d+");
+        Matcher matcher = pattern.matcher(productListTypeString);
+
+        List<Long> list2 = new ArrayList<Long>();
+
+        while (matcher.find()) {
+            list2.add(Long.parseLong(matcher.group())); // Add the value to the list
+        }
+        System.out.println(list2);
+        List<Product> productPage =  productRepository.findProductBylistID(list2);
+        return productPage;
+    }
 }
+
+
