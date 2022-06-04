@@ -38,5 +38,7 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     Page<Cart> findByCustomerNameContainingIgnoreCaseAndPaymentMethodAndStatus(String customerName, PaymentMethod anEnum, OrderStatus anEnum1, Pageable pagingSort);
 
     Page<Cart> findByPaymentMethodAndStatus(PaymentMethod anEnum, OrderStatus anEnum1, Pageable pagingSort);
+
+    Page<Cart> findByCreatedDateBetween(Timestamp day, Timestamp dayEnd, Pageable pageable);
 }
 
