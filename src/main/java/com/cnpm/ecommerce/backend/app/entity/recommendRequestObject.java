@@ -4,7 +4,6 @@ import java.util.List;
 
 public class recommendRequestObject {
     private Integer id;
-    private List<Integer> exceptProductID;
 
     public Integer getId() {
         return id;
@@ -14,11 +13,14 @@ public class recommendRequestObject {
         this.id = id;
     }
 
-    public List<Integer> getExceptProductID() {
+    public List<Long> getExceptProductID() {
         return exceptProductID;
     }
 
-    public void setExceptProductID(List<Integer> exceptProductID) {
+    public void setExceptProductID(List<Long> exceptProductID) {
         this.exceptProductID = exceptProductID;
     }
+
+    private List<Long> exceptProductID;
+
 }

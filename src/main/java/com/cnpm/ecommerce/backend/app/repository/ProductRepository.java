@@ -1,5 +1,6 @@
 package com.cnpm.ecommerce.backend.app.repository;
 
+import com.cnpm.ecommerce.backend.app.entity.Feedback;
 import com.cnpm.ecommerce.backend.app.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +34,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query(value = "SELECT p FROM Product p WHERE p.id IN :listID")
     List<Product> findProductBylistID(Collection<Long> listID);
+
 }
 
 
