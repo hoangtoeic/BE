@@ -233,7 +233,7 @@ public class ProductService implements IProductService{
     }
 
     @Override
-    public List<Product> recommendSystem(Long userID)  {
+    public Page<Product> recommendSystem(Long userID, Pageable pagingSort)  {
 
         /* find the most recent rating in feedback table by userID
         if not exist, send the 10 most appearing products in cart table* */
@@ -303,7 +303,7 @@ public class ProductService implements IProductService{
         }
 
 
-        List<Product> productPage =  productRepository.findProductBylistID(list2);
+        Page<Product> productPage =  productRepository.findProductBylistID(list2, pagingSort);
         return productPage;
     }
 }

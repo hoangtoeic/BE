@@ -119,10 +119,9 @@ public class ProductAPI {
                                       @RequestParam(defaultValue = "id,ASC") String[] sort){
 
         try {
-
             Pageable pagingSort = CommonUtils.sortItem(page, limit, sort);
-            List<Product> productPage = null;
-            productPage = productService.recommendSystem(userID);
+            Page<Product> productPage = null;
+            productPage = productService.recommendSystem(userID, pagingSort);
 
             return new ResponseEntity<>(productPage, HttpStatus.OK);
         } catch (Exception e) {

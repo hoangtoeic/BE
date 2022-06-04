@@ -33,7 +33,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             String productName, BigDecimal priceGTE, BigDecimal priceLTE, String brand, Pageable pagingSort);
 
     @Query(value = "SELECT p FROM Product p WHERE p.id IN :listID")
-    List<Product> findProductBylistID(Collection<Long> listID);
+    Page<Product> findProductBylistID(Collection<Long> listID, Pageable pagingSort);
 
 }
 

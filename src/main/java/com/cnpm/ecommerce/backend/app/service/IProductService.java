@@ -33,5 +33,5 @@ public interface IProductService {
 
     Page<Product> findByNameContainingAndCategoryIdAndPriceAndBrandPageSort(String productName, Long categoryId, BigDecimal priceGTE, BigDecimal priceLTE, String brand, Pageable pagingSort);
 
-    List<Product> recommendSystem(Long userID) throws InterruptedException;
+    Page<Product> recommendSystem(Long userID, Pageable pagingSort) throws InterruptedException;
 }
