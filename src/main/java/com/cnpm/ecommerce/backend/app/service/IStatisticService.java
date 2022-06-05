@@ -26,4 +26,15 @@ public interface IStatisticService {
     Page<Cart> getAllCartByMonth(String month, Pageable pagingSort);
     Page<Cart> getAllCartByQuarter(String quarter, Pageable pagingSort);
     Page<Cart> getAllCartByYear(String year, Pageable pagingSort);
+
+    Long getTotalOrderByDay(String day);
+    Long getTotalOrderByMonth(String month);
+    Long getTotalOrderByQuarter(String quarter);
+    Long getTotalOrderByYear(String year);
+
+    Long getTotalOrderDetailByDay(String day);
+    Long getTotalOrderDetailByMonth(String month);
+    Long getTotalOrderDetailByQuarter(String quarter);
+    Long getTotalOrderDetailByYear(String year);
+    List<Map<String, Object>> getTotalProductSoldGroupByCategoryByMonthInYear(String year);
 }
