@@ -1,10 +1,10 @@
 package com.cnpm.ecommerce.backend.app.dto;
 
+import com.cnpm.ecommerce.backend.app.enums.AuthProvider;
 import com.cnpm.ecommerce.backend.app.validationgroups.OnCreate;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.cnpm.ecommerce.backend.app.entity.Feedback;
 import com.cnpm.ecommerce.backend.app.entity.Role;
-import com.cnpm.ecommerce.backend.app.utils.Provider;
 import com.cnpm.ecommerce.backend.app.validation.ValidEmail;
 import com.cnpm.ecommerce.backend.app.validation.ValidPhoneNumber;
 import com.cnpm.ecommerce.backend.app.validation.ValidUsername;
@@ -42,7 +42,7 @@ public class CustomerDTO extends AbstractDTO{
 
     private int enabled;
 
-    private Provider provider;
+    private AuthProvider provider;
 
     private Role role;
 
@@ -117,11 +117,9 @@ public class CustomerDTO extends AbstractDTO{
         this.enabled = enabled;
     }
 
-    public Provider getProvider() {
-        return provider;
-    }
+    public AuthProvider getProvider() { return provider; }
 
-    public void setProvider(Provider provider) {
+    public void setProvider(AuthProvider provider) {
         this.provider = provider;
     }
 

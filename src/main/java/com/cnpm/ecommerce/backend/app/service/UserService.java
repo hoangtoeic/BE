@@ -4,6 +4,7 @@ import com.cnpm.ecommerce.backend.app.dto.*;
 import com.cnpm.ecommerce.backend.app.entity.PasswordResetToken;
 import com.cnpm.ecommerce.backend.app.entity.Role;
 import com.cnpm.ecommerce.backend.app.entity.User;
+import com.cnpm.ecommerce.backend.app.enums.AuthProvider;
 import com.cnpm.ecommerce.backend.app.exception.ResourceNotFoundException;
 import com.cnpm.ecommerce.backend.app.mapper.UserMapper;
 import com.cnpm.ecommerce.backend.app.repository.PasswordResetTokenRepository;
@@ -118,6 +119,7 @@ public class UserService implements IUserService {
             }
             theEmployee.setEnabled(1);
             theEmployee.setAccCustomer(false);
+            theEmployee.setProvider(AuthProvider.LOCAL);
 
             if(theEmployeeDto.getRoleCode() == null) {
                 return new MessageResponse("Error create Employee!", HttpStatus.INTERNAL_SERVER_ERROR, LocalDateTime.now());
@@ -283,6 +285,7 @@ public class UserService implements IUserService {
             }
             theCustomer.setEnabled(1);
             theCustomer.setAccCustomer(true);
+            theCustomer.setProvider(AuthProvider.LOCAL);
             Set<Role> roles = new HashSet<>(Arrays.asList(roleRepository.findByCode("ROLE_CUSTOMER")));
             theCustomer.setRoles(roles);
 
