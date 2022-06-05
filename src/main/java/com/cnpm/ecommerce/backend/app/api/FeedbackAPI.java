@@ -68,7 +68,7 @@ public class FeedbackAPI {
     }
 
 
-    @PutMapping("/{id}")
+    @PostMapping("/{id}")
     public ResponseEntity<MessageResponse> updateFeedback(@PathVariable("id") Long theId,
                                                           @Valid @RequestBody FeedbackDTO theFeedbackDto, BindingResult bindingResult){
 
