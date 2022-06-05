@@ -40,6 +40,10 @@ public class StatisticAPI {
         return new ResponseEntity<>(statisticService.getAllRevenueByYear(year), HttpStatus.OK);
     }
 
+    if(day == null && month == null && quarter == null && year == null) {
+        return new ResponseEntity<>(statisticService.getAllRevenueByMonth(CommonUtils.covertDateNowToMonthString()), HttpStatus.OK);
+    }
+
     return new ResponseEntity<>(new MessageResponse("Please provide time to get revenue", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);
     }
 
@@ -59,6 +63,10 @@ public class StatisticAPI {
         }
         if(year != null) {
             return new ResponseEntity<>(statisticService.getAllSoldProductByYear(year), HttpStatus.OK);
+        }
+
+        if(day == null && month == null && quarter == null && year == null) {
+            return new ResponseEntity<>(statisticService.getAllSoldProductByMonth(CommonUtils.covertDateNowToMonthString()), HttpStatus.OK);
         }
 
         return new ResponseEntity<>(new MessageResponse("Please provide time to get sold product", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);
@@ -98,10 +106,74 @@ public class StatisticAPI {
                 return new ResponseEntity<>(cartPage, HttpStatus.OK);
             }
 
+            if(day == null && month == null && quarter == null && year == null) {
+                cartPage = statisticService.getAllCartByMonth(CommonUtils.covertDateNowToMonthString(), pagingSort);
+
+                return new ResponseEntity<>(cartPage, HttpStatus.OK);
+            }
+
             return new ResponseEntity<>(new MessageResponse("Please provide time to get cart", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);
 
         } catch (Exception e) {
             return new ResponseEntity<>(new MessageResponse("NOT_FOUND", HttpStatus.NOT_FOUND, LocalDateTime.now()), HttpStatus.NOT_FOUND);
         }
+    }
+
+    @GetMapping("/totalOrders")
+    public ResponseEntity<?> getTotalOrder(@RequestParam(name = "day", required = false) String day,
+                                           @RequestParam(name = "month", required = false) String month,
+                                           @RequestParam(name = "quarter", required = false) String quarter,
+                                           @RequestParam(name = "year", required = false) String year) throws ParseException {
+        if (day != null) {
+            return new ResponseEntity<>(statisticService.getTotalOrderByDay(day), HttpStatus.OK);
+        }
+        if (month != null) {
+            return new ResponseEntity<>(statisticService.getTotalOrderByMonth(month), HttpStatus.OK);
+        }
+        if (quarter != null) {
+            return new ResponseEntity<>(statisticService.getTotalOrderByQuarter(quarter), HttpStatus.OK);
+        }
+        if (year != null) {
+            return new ResponseEntity<>(statisticService.getTotalOrderByYear(year), HttpStatus.OK);
+        }
+
+        if(day == null && month == null && quarter == null && year == null) {
+            return new ResponseEntity<>(statisticService.getTotalOrderByMonth(CommonUtils.covertDateNowToMonthString()), HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(new MessageResponse("NOT_FOUND", HttpStatus.NOT_FOUND, LocalDateTime.now()), HttpStatus.NOT_FOUND);
+
+    }
+
+    @GetMapping("/totalSales")
+    public ResponseEntity<?> getTotalOrderDetail(@RequestParam(name = "day", required = false) String day,
+                                           @RequestParam(name = "month", required = false) String month,
+                                           @RequestParam(name = "quarter", required = false) String quarter,
+                                           @RequestParam(name = "year", required = false) String year) throws ParseException {
+        if (day != null) {
+            return new ResponseEntity<>(statisticService.getTotalOrderDetailByDay(day), HttpStatus.OK);
+        }
+        if (month != null) {
+            return new ResponseEntity<>(statisticService.getTotalOrderDetailByMonth(month), HttpStatus.OK);
+        }
+        if (quarter != null) {
+            return new ResponseEntity<>(statisticService.getTotalOrderDetailByQuarter(quarter), HttpStatus.OK);
+        }
+        if (year != null) {
+            return new ResponseEntity<>(statisticService.getTotalOrderDetailByYear(year), HttpStatus.OK);
+        }
+
+        if(day == null && month == null && quarter == null && year == null) {
+            return new ResponseEntity<>(statisticService.getTotalOrderDetailByMonth(CommonUtils.covertDateNowToMonthString()), HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(new MessageResponse("NOT_FOUND", HttpStatus.NOT_FOUND, LocalDateTime.now()), HttpStatus.NOT_FOUND);
+
+    }
+
+    @GetMapping("/categories")
+    public ResponseEntity<?> getTotalProductSoldGroupByCategoryByMonthInYear(@RequestParam(name = "year", required = false) String year) {
+
+        return new ResponseEntity<>(statisticService.getTotalProductSoldGroupByCategoryByMonthInYear(year == null ? CommonUtils.covertDateNowToYearString(): year), HttpStatus.OK);
     }
 }

@@ -247,5 +247,23 @@ public class CommonUtils {
         return null;
     }
 
+    public static String covertDateNowToMonthString() {
+        Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+        String strDate = formatter.format(date);
+        String[] strDateArr = strDate.split("/");
+
+        return strDateArr[0] + "-" + strDateArr[2];
+    }
+
+    public static String covertDateNowToYearString() {
+        Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+        String strDate = formatter.format(date);
+        String[] strDateArr = strDate.split("/");
+
+        return strDateArr[2];
+    }
+
 
 }
