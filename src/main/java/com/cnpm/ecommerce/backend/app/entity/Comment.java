@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Entity
 @Table(name= "Comment")
-@JsonIgnoreProperties({"product", "customer"})
+@JsonIgnoreProperties({"product"})
 
 public class Comment extends BaseEntity {
     @Column(name = "comment")
