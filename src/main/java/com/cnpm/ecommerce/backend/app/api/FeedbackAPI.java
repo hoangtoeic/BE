@@ -68,17 +68,17 @@ public class FeedbackAPI {
     }
 
 
-    @PutMapping("/{id}")
-    public ResponseEntity<MessageResponse> updateFeedback(@PathVariable("id") Long theId,
-                                                          @Valid @RequestBody FeedbackDTO theFeedbackDto, BindingResult bindingResult){
-
-        if(bindingResult.hasErrors()){
-            return new ResponseEntity<MessageResponse>(new MessageResponse("Invalid value for update Feedback", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);
-        }
-
-        MessageResponse messageResponse = feedbackService.updateFeedback(theId, theFeedbackDto);
-        return new ResponseEntity<MessageResponse>(messageResponse, messageResponse.getStatus());
-    }
+//    @PostMapping("/{id}")
+//    public ResponseEntity<MessageResponse> updateFeedback(@PathVariable("id") Long theId,
+//                                                          @Valid @RequestBody FeedbackDTO theFeedbackDto, BindingResult bindingResult){
+//
+//        if(bindingResult.hasErrors()){
+//            return new ResponseEntity<MessageResponse>(new MessageResponse("Invalid value for update Feedback", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);
+//        }
+//
+//        MessageResponse messageResponse = feedbackService.updateFeedback(theId, theFeedbackDto);
+//        return new ResponseEntity<MessageResponse>(messageResponse, messageResponse.getStatus());
+//    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteFeedback(@PathVariable("id") Long theId){
