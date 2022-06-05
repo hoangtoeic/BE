@@ -40,5 +40,8 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     Page<Cart> findByPaymentMethodAndStatus(PaymentMethod anEnum, OrderStatus anEnum1, Pageable pagingSort);
 
     Page<Cart> findByCreatedDateBetween(Timestamp day, Timestamp dayEnd, Pageable pageable);
+
+    @Query("SELECT count(c) from Cart c WHERE c.createdDate>=?1 AND c.createdDate<?2")
+    Long getTotalOrderByDay(Timestamp date, Timestamp dateEndDate);
 }
 
