@@ -1,5 +1,6 @@
 package com.cnpm.ecommerce.backend.app.repository;
 
+import com.cnpm.ecommerce.backend.app.entity.Feedback;
 import com.cnpm.ecommerce.backend.app.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.security.core.parameters.P;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -29,4 +31,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByNameContainingIgnoreCaseAndPriceGreaterThanEqualAndPriceLessThanEqualAndBrandContainingIgnoreCase(
             String productName, BigDecimal priceGTE, BigDecimal priceLTE, String brand, Pageable pagingSort);
+
+    @Query(value = "SELECT p FROM Product p WHERE p.id IN :listID")
+    Page<Product> findProductBylistID(Collection<Long> listID, Pageable pagingSort);
+
 }
+
+
+
+
+

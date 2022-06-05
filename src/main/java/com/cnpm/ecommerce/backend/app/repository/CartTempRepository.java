@@ -19,5 +19,6 @@ public interface CartTempRepository extends JpaRepository<CartTemp, Long> {
     Page<CartTemp> findByCustomerId(Long customerId, Pageable pageable);
 
     Optional<CartTemp> findByCustomerIdAndProductId(long customerId, Long productId);
+
 }
 

@@ -21,4 +21,9 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
     @Query("SELECT c.product.id AS productId, c.product.name AS productName, SUM(c.quantity) AS quantity from CartItem c WHERE c.createdDate>=?1 AND c.createdDate<?2 GROUP BY c.product.id, c.product.name ORDER BY c.product.id")
     List<Map<String, Object>> getAllSoldProductByDay(Timestamp date, Timestamp dateEndDate);
+
+
+    @Query("select c.product.id from CartItem c GROUP BY c.product.id ORDER BY COUNT(c.product.id) DESC")
+    List<Long> findElementsMostAppear();
+
 }
