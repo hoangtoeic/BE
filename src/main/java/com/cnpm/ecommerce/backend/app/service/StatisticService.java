@@ -441,7 +441,7 @@ public class StatisticService implements IStatisticService {
             for(Category category : categories) {
                 Map<String, Object> map2 = new HashMap<>();
 
-                map2.put("categoryName", category.getName());
+                map2.put("name", category.getName());
                 List<Long> dataList = new ArrayList<>();
                 for(int k = 0; k < 12; k++) {
                     List<Map<String, Object>> objectMaps = (List<Map<String, Object>>) map.get(k).get("soldByCategory");
