@@ -304,6 +304,9 @@ public class ProductService implements IProductService{
 
 
         Page<Product> productPage =  productRepository.findProductBylistID(list2, pagingSort);
+        for(Product product : productPage.getContent()) {
+            product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
+        }
         return productPage;
     }
 }
