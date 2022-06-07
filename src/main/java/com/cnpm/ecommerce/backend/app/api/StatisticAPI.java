@@ -176,4 +176,10 @@ public class StatisticAPI {
 
         return new ResponseEntity<>(statisticService.getTotalProductSoldGroupByCategoryByMonthInYear(year == null ? CommonUtils.covertDateNowToYearString(): year), HttpStatus.OK);
     }
+
+    @GetMapping("/categories/data")
+    public ResponseEntity<?> getTotalProductSoldGroupByCategoryByMonthInYear1(@RequestParam(name = "year", required = false) String year) {
+
+        return new ResponseEntity<>(statisticService.getTotalProductSoldGroupByCategoryByMonthInYear1(year == null ? CommonUtils.covertDateNowToYearString(): year), HttpStatus.OK);
+    }
 }
