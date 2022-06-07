@@ -20,7 +20,7 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
     Page<CartItem> findByCartId(Long cartId, Pageable pageable);
 
-    @Query("SELECT c.product.id AS productId, c.product.name AS productName, SUM(c.quantity) AS quantity from CartItem c WHERE c.createdDate>=?1 AND c.createdDate<?2 GROUP BY c.product.id, c.product.name ORDER BY SUM(c.quantity) DESC")
+    @Query("SELECT c.product.id AS productId, c.product.name AS productName, SUM(c.quantity) AS quantity, SUM(c.quantity) * c.product.price AS totalPrice from CartItem c WHERE c.createdDate>=?1 AND c.createdDate<?2 GROUP BY c.product.id, c.product.name, c.product.price ORDER BY SUM(c.quantity) DESC")
     List<Map<String, Object>> getAllSoldProductByDay(Timestamp date, Timestamp dateEndDate, PageRequest of);
 
 

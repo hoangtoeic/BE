@@ -37,4 +37,5 @@ public interface IStatisticService {
     Long getTotalOrderDetailByQuarter(String quarter);
     Long getTotalOrderDetailByYear(String year);
     List<Map<String, Object>> getTotalProductSoldGroupByCategoryByMonthInYear(String year);
+    List<Map<String, Object>> getTotalProductSoldGroupByCategoryByMonthInYear1(String year);
 }
