@@ -2,6 +2,7 @@ package com.cnpm.ecommerce.backend.app.service;
 
 import com.cnpm.ecommerce.backend.app.entity.Cart;
 import com.cnpm.ecommerce.backend.app.entity.CartItem;
+import com.cnpm.ecommerce.backend.app.entity.Category;
 import com.cnpm.ecommerce.backend.app.repository.CartItemRepository;
 import com.cnpm.ecommerce.backend.app.repository.CartRepository;
 import com.cnpm.ecommerce.backend.app.repository.CategoryRepository;
@@ -17,10 +18,8 @@ import org.springframework.util.Base64Utils;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -351,6 +350,8 @@ public class StatisticService implements IStatisticService {
         try {
             long count = categoryRepository.count();
 
+            List<Category> categories = categoryRepository.findAll();
+
             int i =1 ;
             while (i <= 12) {
                 Map<String, Object> map1 = new HashMap<>();
@@ -358,12 +359,100 @@ public class StatisticService implements IStatisticService {
                 Timestamp date = CommonUtils.convertStringToMonth(i + "-" + year, "-");
                 Timestamp dateEndDate = CommonUtils.incrementTimestamp(date, CommonUtils.countDayOfMonth(i + "-" + year, "-"));
                 List<Map<String, Object>> listSoldByCategory = cartItemRepository.getTotalProductSoldGroupByCategory(date, dateEndDate);
-                map1.put("soldByCategory", listSoldByCategory);
+                //List<Long> listCategoryId = listSoldByCategory.stream().filter(x -> x.get("categoryId")).collect(Collectors.toList());
+                List<Long> listCategoryId = new ArrayList<>();
+                for(int j = 0 ; j < listSoldByCategory.size(); j++) {
+                    listCategoryId.add(Long.parseLong(listSoldByCategory.get(j).get("categoryId").toString()));
+                }
+                List<Map<String, Object>> listSoldByCategoryProcess = new ArrayList<>();
+                for(Category category : categories) {
+                    Map<String, Object> map2 = new HashMap<>();
+                    if(listCategoryId.contains(category.getId())) {
+                        Optional<Map<String, Object>> ct = listSoldByCategory.stream().filter(x -> x.get("categoryId").equals(category.getId())).findFirst();
+                        map2.put("categoryId", category.getId());
+                        map2.put("categoryName", category.getName());
+                        map2.put("quantity", ct.get().get("quantity"));
+                    } else {
+                        map2.put("categoryId", category.getId());
+                        map2.put("categoryName", category.getName());
+                        map2.put("quantity", 0);
+                    }
+                    listSoldByCategoryProcess.add(map2);
+
+
+                }
+//              map1.put("soldByCategory", listSoldByCategory);
+                map1.put("soldByCategory", listSoldByCategoryProcess);
                 map.add(map1);
                 i++;
             }
 
             return map;
+
+        } catch(Exception e)  {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public List<Map<String, Object>> getTotalProductSoldGroupByCategoryByMonthInYear1(String year) {
+        List<Map<String, Object>> map = new ArrayList<>();
+        try {
+            long count = categoryRepository.count();
+
+            List<Category> categories = categoryRepository.findAll();
+
+            int i =1 ;
+            while (i <= 12) {
+                Map<String, Object> map1 = new HashMap<>();
+                map1.put("month", i);
+                Timestamp date = CommonUtils.convertStringToMonth(i + "-" + year, "-");
+                Timestamp dateEndDate = CommonUtils.incrementTimestamp(date, CommonUtils.countDayOfMonth(i + "-" + year, "-"));
+                List<Map<String, Object>> listSoldByCategory = cartItemRepository.getTotalProductSoldGroupByCategory(date, dateEndDate);
+                //List<Long> listCategoryId = listSoldByCategory.stream().filter(x -> x.get("categoryId")).collect(Collectors.toList());
+                List<Long> listCategoryId = new ArrayList<>();
+                for(int j = 0 ; j < listSoldByCategory.size(); j++) {
+                    listCategoryId.add(Long.parseLong(listSoldByCategory.get(j).get("categoryId").toString()));
+                }
+                List<Map<String, Object>> listSoldByCategoryProcess = new ArrayList<>();
+                for(Category category : categories) {
+                    Map<String, Object> map2 = new HashMap<>();
+                    if(listCategoryId.contains(category.getId())) {
+                        Optional<Map<String, Object>> ct = listSoldByCategory.stream().filter(x -> x.get("categoryId").equals(category.getId())).findFirst();
+                        map2.put("categoryId", category.getId());
+                        map2.put("categoryName", category.getName());
+                        map2.put("quantity", ct.get().get("quantity"));
+                    } else {
+                        map2.put("categoryId", category.getId());
+                        map2.put("categoryName", category.getName());
+                        map2.put("quantity", 0);
+                    }
+                    listSoldByCategoryProcess.add(map2);
+
+
+                }
+//              map1.put("soldByCategory", listSoldByCategory);
+                map1.put("soldByCategory", listSoldByCategoryProcess);
+                map.add(map1);
+                i++;
+            }
+            List<Map<String, Object>> listSoldByCategoryProcess1 = new ArrayList<>();
+            for(Category category : categories) {
+                Map<String, Object> map2 = new HashMap<>();
+
+                map2.put("categoryName", category.getName());
+                List<Long> dataList = new ArrayList<>();
+                for(int k = 0; k < 12; k++) {
+                    List<Map<String, Object>> objectMaps = (List<Map<String, Object>>) map.get(k).get("soldByCategory");
+                    Optional<Map<String, Object>> ct = objectMaps.stream().filter(x -> x.get("categoryId").equals(category.getId())).findFirst();
+                    dataList.add(Long.parseLong(ct.get().get("quantity").toString()));
+                }
+                map2.put("data", dataList);
+                listSoldByCategoryProcess1.add(map2);
+            }
+
+            return listSoldByCategoryProcess1;
 
         } catch(Exception e)  {
             e.printStackTrace();
