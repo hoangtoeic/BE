@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 @RestController
 @RequestMapping("/api/statistics")
 @CrossOrigin
+@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
 public class StatisticAPI {
 
     @Autowired

@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,7 @@ public class CustomerAPI {
     private IUserService customerService;
 
     @GetMapping("")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
     public ResponseEntity<Page<User>> findAll(@RequestParam(name = "q", required = false) String userName,
                                               @RequestParam(name = "enabled", required = false) Integer enabled,
                                               @RequestParam(defaultValue = "0") int page,
@@ -64,6 +66,7 @@ public class CustomerAPI {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('CUSTOMER')")
     public ResponseEntity<CustomerDTO> findById(@PathVariable("id") Long theId){
 
         CustomerDTO theCustomer = customerService.findByIdCustomerDto(theId);
@@ -82,6 +85,7 @@ public class CustomerAPI {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('CUSTOMER')")
     public ResponseEntity<MessageResponse> updateCustomer(@PathVariable("id") Long theId,
                                                           @Validated(OnUpdate.class) @RequestBody CustomerDTO theCustomerDto, BindingResult bindingResult){
 
@@ -94,6 +98,7 @@ public class CustomerAPI {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
     public ResponseEntity<?> deleteCustomer(@PathVariable("id") Long theId){
 
         customerService.deleteCustomer(theId);
@@ -107,6 +112,7 @@ public class CustomerAPI {
     }
 
     @GetMapping("/active")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
     public ResponseEntity<MessageResponse> activeCustomer(@RequestParam(name = "username", required = true) String userName){
 
         MessageResponse messageResponse = customerService.activeCustomer(userName);
