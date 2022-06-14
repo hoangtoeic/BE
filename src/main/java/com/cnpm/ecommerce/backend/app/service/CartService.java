@@ -83,7 +83,8 @@ public class CartService implements ICartService{
     @Override
     public MessageResponse createCart(CartDTO cartDTO) {
 
-        if(cartDTO.getPaymentMethod().equals(PaymentMethod.CASH) || cartDTO.getPaymentMethod().equals(PaymentMethod.PAYPAL)) {
+        if(cartDTO.getPaymentMethod().equals(PaymentMethod.CASH) || cartDTO.getPaymentMethod().equals(PaymentMethod.PAYPAL) ||
+                cartDTO.getPaymentMethod().equals(PaymentMethod.PAYPAL_WEB)) {
             Cart cart = new Cart();
             cart.setTotalCost(cartDTO.getTotalCost());
             cart.setNote(cartDTO.getNote());
@@ -94,7 +95,7 @@ public class CartService implements ICartService{
             cart.setCustomer(customer.get());
             cart.setCustomerName(customer.get().getUserName());
             cart.setAddress(cartDTO.getAddress());
-            cart.setPaymentMethod(cartDTO.getPaymentMethod());
+            cart.setPaymentMethod(cartDTO.getPaymentMethod().equals(PaymentMethod.PAYPAL_WEB) ? PaymentMethod.PAYPAL : cartDTO.getPaymentMethod() );
             cart.setStatus(cartDTO.getStatus() == null ? OrderStatus.PENDING : cartDTO.getStatus());
             cart.setCreatedBy(cartDTO.getCreatedBy());
             cart.setCreatedDate(new Date());
