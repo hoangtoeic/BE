@@ -69,15 +69,32 @@ public class FeedbackService implements IFeedbackService {
             throw new ResourceNotFoundException("Not found product with ID=" + theFeedbackDto.getProductId());
         }
 
+        // find all carts for customerId
+        List<Cart> carts = cartRepo.findByCustomer(theFeedbackDto.getCustomerId());
         // check feedback has been existed
         Optional<Feedback> theExistFeedback = feedbackRepository.findByUserIdAndProductId(theFeedbackDto.getCustomerId(), theFeedbackDto.getProductId());
 
         if(theExistFeedback.isPresent()) {
-            return new MessageResponse("Can not rating, because you was rated it, just only update!", HttpStatus.BAD_REQUEST, LocalDateTime.now());
+            for(Cart cart : carts) {
+                for(CartItem cartItem : cart.getCartItems()) {
+                    if(cartItem.getProduct().getId() == theFeedbackDto.getProductId()) {
+                        if(cart.getStatus().equals(OrderStatus.COMPLETED)) {
+
+                            theExistFeedback.get().setRating(theFeedbackDto.getRating());
+                            theExistFeedback.get().setModifiedDate(new Date());
+                            theExistFeedback.get().setModifiedBy(customer.get().getUserName());
+                            feedbackRepository.save(theExistFeedback.get());
+
+                            // update rating average for product
+                            updateRatingAverage(theFeedbackDto, product);
+
+                            return new MessageResponse("Update feedback successfully!", HttpStatus.OK, LocalDateTime.now());
+                        }
+                    }
+                }
+            }
         }
 
-        // find all carts for customerId
-        List<Cart> carts = cartRepo.findByCustomer(theFeedbackDto.getCustomerId());
 
         for(Cart cart : carts) {
             for(CartItem cartItem : cart.getCartItems()) {
