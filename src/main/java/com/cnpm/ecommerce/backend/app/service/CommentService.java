@@ -68,6 +68,7 @@ public class CommentService implements ICommentService {
                 for(Comment comment : commentPage.getContent()) {
                     comment.setProductIds(comment.getProduct().getId());
                     comment.setCustomerIds(comment.getCustomer().getId());
+                    comment.getCustomer().setProfilePictureArr(Base64Utils.decodeFromString(comment.getCustomer().getProfilePicture()));
                 }
                 }
             catch (Exception e) {
