@@ -11,6 +11,7 @@ import com.cnpm.ecommerce.backend.app.utils.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -119,6 +120,7 @@ public class AuthAPI {
     }
 
     @PostMapping("/logout")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<?> logout(@Valid @RequestBody LogoutRequest request, BindingResult bindingResult) {
         if(bindingResult.hasErrors()){
             return new ResponseEntity<>(new MessageResponse("Invalid value.", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);

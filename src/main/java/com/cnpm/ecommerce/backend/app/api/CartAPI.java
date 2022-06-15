@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -51,6 +52,7 @@ public class CartAPI {
     private IPaypalTransactionService paypalTransactionService;
 
     @GetMapping()
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('CUSTOMER')")
     public ResponseEntity<?> findAll(@RequestParam(name = "customerName", required = false) String customerName,
                                       @RequestParam(name = "paymentType", required = false) String paymentType,
                                      @RequestParam(name = "status", required = false) String status,
@@ -80,6 +82,7 @@ public class CartAPI {
 
     // for customer only
     @GetMapping("/customers/{customerId}")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('CUSTOMER')")
     public ResponseEntity<?> findAllCartsByCustomer(@PathVariable("customerId") Long customerId,
                                      @RequestParam(defaultValue = "0") int page,
                                      @RequestParam(defaultValue = "20") int limit,
@@ -96,6 +99,7 @@ public class CartAPI {
     }
 
     @GetMapping(value = { "/{id}" })
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('CUSTOMER')")
     public ResponseEntity<Cart> getCart(@PathVariable("id") long id) {
         Cart cart = cartService.findById(id);
         return new ResponseEntity<>(cart, HttpStatus.OK);
@@ -103,6 +107,7 @@ public class CartAPI {
     }
 
     @PostMapping("")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<?> createCart(@Validated @RequestBody CartDTO cartDto, BindingResult theBindingResult, HttpServletRequest request){
 
         if(theBindingResult.hasErrors()){
@@ -146,20 +151,10 @@ public class CartAPI {
         messageResponse = new MessageResponse("Error payment", HttpStatus.INTERNAL_SERVER_ERROR, LocalDateTime.now());
         return new ResponseEntity<>(messageResponse, messageResponse.getStatus());
     }
-//    @PutMapping("/{id}")
-//    public ResponseEntity<MessageResponse> updateCart(@PathVariable("id") long theId,
-//                                                      @Validated @RequestBody CartDTO cartDto, BindingResult bindingResult){
-//
-//        if(bindingResult.hasErrors()){
-//            return new ResponseEntity<>(new MessageResponse("Invalid value for update cart", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);
-//        }
-//
-//        MessageResponse messageResponse = cartService.updateCart(theId, cartDto);
-//        return new ResponseEntity<>(messageResponse, messageResponse.getStatus());
-//    }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProduct(@PathVariable("id") long theId){
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
+    public ResponseEntity<?> deleteCart(@PathVariable("id") long theId){
 
         cartService.deleteCart(theId);
         return new ResponseEntity<>(new MessageResponse("Delete cart successfully!", HttpStatus.OK, LocalDateTime.now()), HttpStatus.OK);
@@ -167,6 +162,7 @@ public class CartAPI {
 
 
     @PutMapping("/status/{id}")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('CUSTOMER')")
     public ResponseEntity<MessageResponse> updateStatusCart(@PathVariable("id") long theId,
                                                             @Validated @RequestBody OrderStatusDTO statusDto, BindingResult bindingResult){
 
@@ -179,6 +175,7 @@ public class CartAPI {
     }
 
     @GetMapping(value = { "/pay/success" })
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('CUSTOMER')")
     public ResponseEntity<?> getSuccessPayment(@RequestParam("paymentId") String paymentId, @RequestParam("PayerID") String payerId) {
         try {
             Payment payment = paypalService.executePayment(paymentId, payerId);
@@ -200,6 +197,7 @@ public class CartAPI {
     }
 
     @GetMapping(value = { "/pay/cancel" })
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('CUSTOMER')")
     public ResponseEntity<?> getCancelPayment() {
         return new ResponseEntity<>(new MessageResponse(
                 "Payment has been cancel. Please repayment or choose different payment method.", HttpStatus.OK, LocalDateTime.now()), HttpStatus.OK);

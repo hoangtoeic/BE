@@ -10,6 +10,7 @@ import com.cnpm.ecommerce.backend.app.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -75,6 +76,7 @@ public class PasswordAPI {
     }
 
     @PostMapping("/edit")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('CUSTOMER')")
     public ResponseEntity<?> changePassword(@Valid @RequestBody PasswordChangeRequest request, BindingResult theBindingResult) {
         if(theBindingResult.hasErrors()){
             return new ResponseEntity<>(new MessageResponse("Invalid value for edit password", HttpStatus.BAD_REQUEST, LocalDateTime.now()), HttpStatus.BAD_REQUEST);

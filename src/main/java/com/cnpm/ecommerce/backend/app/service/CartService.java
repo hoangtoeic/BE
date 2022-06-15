@@ -73,6 +73,9 @@ public class CartService implements ICartService{
             for(CartItem cartItem : cart.get().getCartItems()) {
                 cartItem.setCartIds(cart.get().getId());
                 cartItem.setProductIds(cartItem.getProduct().getId());
+                cartItem.setProductName(cartItem.getProduct().getName());
+                cartItem.setProductThumbnail(Base64Utils.encodeToString(cartItem.getProduct().getThumbnailArr()));
+
             }
             return cart.get();
         }

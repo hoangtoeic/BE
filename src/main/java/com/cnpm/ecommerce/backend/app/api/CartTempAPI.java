@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -47,6 +48,7 @@ public class CartTempAPI {
 
     // for customer only
     @GetMapping("/customers/{customerId}")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('CUSTOMER')")
     public ResponseEntity<?> findAllCartTempsByCustomer(@PathVariable("customerId") Long customerId,
                                      @RequestParam(defaultValue = "0") int page,
                                      @RequestParam(defaultValue = "20") int limit,
@@ -63,6 +65,7 @@ public class CartTempAPI {
     }
 
     @GetMapping(value = { "/{id}" })
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<?> getCart(@PathVariable("id") Long id) {
         CartTemp cart = cartTempService.findById(id);
         return new ResponseEntity<>(cart, HttpStatus.OK);
@@ -70,6 +73,7 @@ public class CartTempAPI {
     }
 
     @PostMapping("")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<?> createCart(@Validated @RequestBody CartTempDTO cartDto, BindingResult theBindingResult, HttpServletRequest request){
 
         if(theBindingResult.hasErrors()){
@@ -82,6 +86,7 @@ public class CartTempAPI {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<MessageResponse> updateCart(@PathVariable("id") long theId,
                                                       @Validated @RequestBody CartTempDTO cartDto, BindingResult bindingResult){
 
@@ -94,6 +99,7 @@ public class CartTempAPI {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<?> deleteCartTemp(@PathVariable("id") long theId){
 
         MessageResponse messageResponse = cartTempService.deleteCart(theId);
@@ -101,6 +107,7 @@ public class CartTempAPI {
     }
 
     @PostMapping("/deletes")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<?> deleteMultipleCartTemp(@RequestBody DeleteDTO ids){
 
         List<Long> theIds = ids.getIds();
