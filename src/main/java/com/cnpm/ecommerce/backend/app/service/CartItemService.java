@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Base64Utils;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -34,11 +35,7 @@ public class CartItemService implements ICartItemService{
     public Page<CartItem> findAllPageAndSort(Pageable pagingSort) {
         Page<CartItem> cartItemPage = cartItemRepo.findAll(pagingSort);
 
-        for (CartItem cartItem : cartItemPage.getContent()){
-            cartItem.setCartIds(cartItem.getCart().getId());
-            cartItem.setProductIds(cartItem.getProduct().getId());
-        }
-        return  cartItemPage;
+        return getCartItems(cartItemPage);
     }
 
     @Override
@@ -50,6 +47,9 @@ public class CartItemService implements ICartItemService{
         } else {
             cartItem.get().setCartIds(cartItem.get().getCart().getId());
             cartItem.get().setProductIds(cartItem.get().getProduct().getId());
+            cartItem.get().setProductName(cartItem.get().getProduct().getName());
+            cartItem.get().setProductThumbnail(Base64Utils.encodeToString(cartItem.get().getProduct().getThumbnailArr()));
+
             return cartItem.get();
         }
     }
@@ -107,11 +107,7 @@ public class CartItemService implements ICartItemService{
 
         Page<CartItem> cartItemPage = cartItemRepo.findById(id, pagingSort);
 
-        for (CartItem cartItem : cartItemPage.getContent()){
-            cartItem.setCartIds(cartItem.getCart().getId());
-            cartItem.setProductIds(cartItem.getProduct().getId());
-        }
-        return  cartItemPage;
+        return getCartItems(cartItemPage);
     }
 
     @Override
@@ -123,12 +119,18 @@ public class CartItemService implements ICartItemService{
         } else {
             Page<CartItem> cartItemPage = cartItemRepo.findByCartId(cartId, pagingSort);
 
-            for (CartItem cartItem : cartItemPage.getContent()){
-                cartItem.setCartIds(cartItem.getCart().getId());
-                cartItem.setProductIds(cartItem.getProduct().getId());
-            }
-            return  cartItemPage;
+            return getCartItems(cartItemPage);
         }
 
+    }
+
+    private Page<CartItem> getCartItems(Page<CartItem> cartItemPage) {
+        for (CartItem cartItem : cartItemPage.getContent()){
+            cartItem.setCartIds(cartItem.getCart().getId());
+            cartItem.setProductIds(cartItem.getProduct().getId());
+            cartItem.setProductName(cartItem.getProduct().getName());
+            cartItem.setProductThumbnail(Base64Utils.encodeToString(cartItem.getProduct().getThumbnailArr()));
+        }
+        return  cartItemPage;
     }
 }

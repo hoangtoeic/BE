@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,6 +58,7 @@ public class BrandAPI {
     }
 
     @PostMapping("")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
     public ResponseEntity<MessageResponse> createBrand(@Valid @RequestBody BrandDTO theBrandDto, BindingResult theBindingResult){
 
         if(theBindingResult.hasErrors()){
@@ -72,6 +74,7 @@ public class BrandAPI {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') ")
     public ResponseEntity<MessageResponse> updateBrand(@PathVariable("id") Long theId,
                                                           @Valid @RequestBody BrandDTO theBrandDto, BindingResult bindingResult){
 
@@ -84,6 +87,7 @@ public class BrandAPI {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
     public ResponseEntity<?> deleteBrand(@PathVariable("id") Long theId){
 
        MessageResponse messageResponse = brandService.deleteBrand(theId);

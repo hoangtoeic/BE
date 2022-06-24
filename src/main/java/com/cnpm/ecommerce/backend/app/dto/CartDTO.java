@@ -30,7 +30,7 @@ public class CartDTO extends AbstractDTO {
     private OrderStatus status;
 
     @NotNull(message = "is required")
-    @EnumNamePattern(regexp = "CASH|PAYPAL")
+    @EnumNamePattern(regexp = "CASH|PAYPAL|PAYPAL_WEB")
     private PaymentMethod paymentMethod;
 
     public long getCustomerId() {

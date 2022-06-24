@@ -14,6 +14,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.text.ParseException;
 import java.time.LocalDateTime;
 
 @ControllerAdvice
@@ -61,6 +62,13 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(InvalidFormatException.class)
     public ResponseEntity<Object> handleInvalidFormatException(InvalidFormatException ex){
+        MessageResponse messageResponse = new MessageResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, LocalDateTime.now());
+
+        return new ResponseEntity<>(messageResponse, messageResponse.getStatus());
+    }
+
+    @ExceptionHandler(ParseException.class)
+    public ResponseEntity<Object> handleParseException(ParseException ex){
         MessageResponse messageResponse = new MessageResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, LocalDateTime.now());
 
         return new ResponseEntity<>(messageResponse, messageResponse.getStatus());

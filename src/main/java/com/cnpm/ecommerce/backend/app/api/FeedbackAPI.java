@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,6 +58,7 @@ public class FeedbackAPI {
     }
 
     @PostMapping("")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<MessageResponse> createFeedback(@Valid @RequestBody FeedbackDTO theFeedbackDto, BindingResult theBindingResult){
 
         if(theBindingResult.hasErrors()){
@@ -67,8 +69,8 @@ public class FeedbackAPI {
         return new ResponseEntity<MessageResponse>(messageResponse, messageResponse.getStatus());
     }
 
-
-    @PutMapping("/{id}")
+    @PostMapping("/{id}")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<MessageResponse> updateFeedback(@PathVariable("id") Long theId,
                                                           @Valid @RequestBody FeedbackDTO theFeedbackDto, BindingResult bindingResult){
 
@@ -80,7 +82,9 @@ public class FeedbackAPI {
         return new ResponseEntity<MessageResponse>(messageResponse, messageResponse.getStatus());
     }
 
+
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
     public ResponseEntity<?> deleteFeedback(@PathVariable("id") Long theId){
 
         feedbackService.deleteFeedback(theId);

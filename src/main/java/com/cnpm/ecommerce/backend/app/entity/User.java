@@ -1,5 +1,6 @@
 package com.cnpm.ecommerce.backend.app.entity;
 
+import com.cnpm.ecommerce.backend.app.enums.AuthProvider;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
@@ -10,7 +11,7 @@ import java.util.Set;
 @Table(name = "users", uniqueConstraints =
         {@UniqueConstraint(columnNames = "userName"),
          @UniqueConstraint(columnNames = "email")})
-@JsonIgnoreProperties({"roles", "password", "feedbacks", "accCustomer", "profilePictureArr"})
+@JsonIgnoreProperties({"roles", "password", "feedbacks", "accCustomer", "profilePictureArr", "provider", "providerId"})
 public class User extends BaseEntity{
 
     @Column(name = "username")
@@ -46,6 +47,13 @@ public class User extends BaseEntity{
 
     @Column(name = "is_acc_customer")
     private Boolean isAccCustomer;
+
+    @Column(name = "provider")
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider;
+
+    @Column(name = "provider_id")
+    private String providerId;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
@@ -157,4 +165,12 @@ public class User extends BaseEntity{
     public String getRoleCode() { return roleCode; }
 
     public void setRoleCode(String roleCode) { this.roleCode = roleCode; }
+
+    public AuthProvider getProvider() { return provider; }
+
+    public void setProvider(AuthProvider provider) { this.provider = provider; }
+
+    public String getProviderId() { return providerId; }
+
+    public void setProviderId(String providerId) { this.providerId = providerId; }
 }

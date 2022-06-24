@@ -2,27 +2,29 @@ package com.cnpm.ecommerce.backend.app.service;
 
 import com.cnpm.ecommerce.backend.app.dto.MessageResponse;
 import com.cnpm.ecommerce.backend.app.dto.ProductDTO;
-import com.cnpm.ecommerce.backend.app.entity.Category;
-import com.cnpm.ecommerce.backend.app.entity.Feedback;
-import com.cnpm.ecommerce.backend.app.entity.Product;
+import com.cnpm.ecommerce.backend.app.entity.*;
 import com.cnpm.ecommerce.backend.app.exception.ResourceNotFoundException;
-import com.cnpm.ecommerce.backend.app.repository.BrandRepository;
+import com.cnpm.ecommerce.backend.app.repository.CartItemRepository;
 import com.cnpm.ecommerce.backend.app.repository.FeedbackRepository;
 import com.cnpm.ecommerce.backend.app.repository.ProductRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Base64Utils;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 @Service
 @Transactional
@@ -31,6 +33,11 @@ public class ProductService implements IProductService{
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private FeedbackRepository feedbackRepository;
+
+    @Autowired
+    private CartItemRepository cartItemRepository;
     @Autowired
     private CategoryService categoryService;
 
@@ -224,4 +231,84 @@ public class ProductService implements IProductService{
 
         }
     }
+
+    @Override
+    public Page<Product> recommendSystem(Long userID, Pageable pagingSort)  {
+
+        /* find the most recent rating in feedback table by userID
+        if not exist, send the 10 most appearing products in cart table* */
+        Integer productID = -1;
+        List<Long> list2 = new ArrayList<Long>();
+        okLetDoIt: try{
+            System.out.println("userID" + userID);
+            List<Feedback> productsByUserID =  feedbackRepository.findProductBuyMostRecent(userID);
+            if (productsByUserID.size() == 0) break okLetDoIt;
+            Feedback feedback = productsByUserID.get(productsByUserID.size() - 1);
+            productID = feedback.getProduct().getId().intValue();
+            System.out.println("productID" + productID);
+
+            String productListTypeString = "";
+            RestTemplate restTemplate = new RestTemplate();
+
+            List<Long> exceptProductID = new ArrayList<>();
+            exceptProductID = feedbackRepository.findProductIDRatingSmaller4(userID);
+            System.out.println("exceptProductID" + exceptProductID);
+
+            recommendRequestObject requestObject = new recommendRequestObject();
+            requestObject.setId(productID);
+            requestObject.setExceptProductID(exceptProductID);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+            HttpEntity<recommendRequestObject> entity = new HttpEntity<recommendRequestObject>(requestObject,headers);
+
+            try {
+
+                ResponseEntity<String> response = restTemplate.exchange(
+                        "https://flask-recommend-system-deploy.herokuapp.com/recommend", HttpMethod.POST, entity, String.class);
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                recommendResponseObject responseObject = objectMapper.readValue(response.getBody(), recommendResponseObject.class);
+                productListTypeString = responseObject.getProductList();
+                System.out.println("recommendResponseObject:" + productListTypeString);
+            }
+            catch (RuntimeException e) {
+                System.out.println("faild for query recommend system" + e);
+                e.printStackTrace();
+                return null;
+            } catch (JsonMappingException e) {
+                e.printStackTrace();
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+            // Convert productListTypeString to List<Long>
+
+            Pattern pattern = Pattern.compile("\\d+");
+            Matcher matcher = pattern.matcher(productListTypeString);
+
+            while (matcher.find()) {
+                list2.add(Long.parseLong(matcher.group())); // Add the value to the list
+            }
+            System.out.println(list2);
+
+        }
+        catch (RuntimeException e) {
+            e.printStackTrace();
+        }
+        System.out.println("productID2" + productID);
+
+        /* if not exist, send the 10 most appearing products in cart table* */
+        if(productID == -1) {
+           list2 = cartItemRepository.findElementsMostAppear();
+            System.out.println("list233" + list2);
+        }
+
+
+        Page<Product> productPage =  productRepository.findProductBylistID(list2, pagingSort);
+        for(Product product : productPage.getContent()) {
+            product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
+        }
+        return productPage;
+    }
 }
+
+

@@ -9,12 +9,15 @@ import com.cnpm.ecommerce.backend.app.enums.OrderStatus;
 import com.cnpm.ecommerce.backend.app.enums.PaymentMethod;
 import com.cnpm.ecommerce.backend.app.exception.ResourceNotFoundException;
 import com.cnpm.ecommerce.backend.app.repository.*;
+import com.paypal.api.payments.Payment;
+import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Base64Utils;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -52,6 +55,8 @@ public class CartService implements ICartService{
             for(CartItem cartItem : cart.getCartItems()) {
                 cartItem.setCartIds(cart.getId());
                 cartItem.setProductIds(cartItem.getProduct().getId());
+                cartItem.setProductName(cartItem.getProduct().getName());
+                cartItem.setProductThumbnail(Base64Utils.encodeToString(cartItem.getProduct().getThumbnailArr()));
             }
         }
         return  cartPage;
@@ -68,6 +73,9 @@ public class CartService implements ICartService{
             for(CartItem cartItem : cart.get().getCartItems()) {
                 cartItem.setCartIds(cart.get().getId());
                 cartItem.setProductIds(cartItem.getProduct().getId());
+                cartItem.setProductName(cartItem.getProduct().getName());
+                cartItem.setProductThumbnail(Base64Utils.encodeToString(cartItem.getProduct().getThumbnailArr()));
+
             }
             return cart.get();
         }
@@ -78,7 +86,8 @@ public class CartService implements ICartService{
     @Override
     public MessageResponse createCart(CartDTO cartDTO) {
 
-        if(cartDTO.getPaymentMethod().equals(PaymentMethod.CASH) || cartDTO.getPaymentMethod().equals(PaymentMethod.PAYPAL)) {
+        if(cartDTO.getPaymentMethod().equals(PaymentMethod.CASH) || cartDTO.getPaymentMethod().equals(PaymentMethod.PAYPAL) ||
+                cartDTO.getPaymentMethod().equals(PaymentMethod.PAYPAL_WEB)) {
             Cart cart = new Cart();
             cart.setTotalCost(cartDTO.getTotalCost());
             cart.setNote(cartDTO.getNote());
@@ -87,8 +96,9 @@ public class CartService implements ICartService{
                 throw  new ResourceNotFoundException("Not found customer with ID=" + cartDTO.getCustomerId());
             }
             cart.setCustomer(customer.get());
+            cart.setCustomerName(customer.get().getUserName());
             cart.setAddress(cartDTO.getAddress());
-            cart.setPaymentMethod(cartDTO.getPaymentMethod());
+            cart.setPaymentMethod(cartDTO.getPaymentMethod().equals(PaymentMethod.PAYPAL_WEB) ? PaymentMethod.PAYPAL : cartDTO.getPaymentMethod() );
             cart.setStatus(cartDTO.getStatus() == null ? OrderStatus.PENDING : cartDTO.getStatus());
             cart.setCreatedBy(cartDTO.getCreatedBy());
             cart.setCreatedDate(new Date());
@@ -240,6 +250,67 @@ public class CartService implements ICartService{
             }
         }
         return new MessageResponse("Update order status successfully.", HttpStatus.OK, LocalDateTime.now());
+    }
+
+    @Override
+    public Page<Cart> findByPaymentAndStatus(String paymentType, String status, Pageable pagingSort) {
+        Page<Cart> cartPage = null;
+        if(paymentType == null && status != null) {
+            if(EnumUtils.isValidEnum(OrderStatus.class, status)) {
+                cartPage = cartRepo.findByStatus(EnumUtils.getEnum(OrderStatus.class, status), pagingSort);
+            } else {
+                return null;
+            }
+            return getCarts(cartPage);
+
+        } else if(status == null && paymentType != null) {
+            if(EnumUtils.isValidEnum(PaymentMethod.class, paymentType)) {
+               cartPage = cartRepo.findByPaymentMethod(EnumUtils.getEnum(PaymentMethod.class, paymentType), pagingSort);
+            } else {
+                return null;
+            }
+            return getCarts(cartPage);
+        } else {
+            if(EnumUtils.isValidEnum(OrderStatus.class, status) && EnumUtils.isValidEnum(PaymentMethod.class, paymentType)) {
+                cartPage = cartRepo.findByPaymentMethodAndStatus(EnumUtils.getEnum(PaymentMethod.class, paymentType), EnumUtils.getEnum(OrderStatus.class, status),pagingSort);
+            } else {
+                return null;
+            }
+            return getCarts(cartPage);
+        }
+    }
+
+    @Override
+    public Page<Cart> findByCustomerNamePaymentAndStatusPageAndSort(String customerName, String paymentType, String status, Pageable pagingSort) {
+        Page<Cart> cartPage = null;
+        if(paymentType == null && status != null) {
+            if(EnumUtils.isValidEnum(OrderStatus.class, status)) {
+                cartPage = cartRepo.findByCustomerNameContainingIgnoreCaseAndStatus(customerName, EnumUtils.getEnum(OrderStatus.class, status), pagingSort);
+            } else {
+                return null;
+            }
+            return getCarts(cartPage);
+
+        } else if(status == null && paymentType != null) {
+            if(EnumUtils.isValidEnum(PaymentMethod.class, paymentType)) {
+                cartPage = cartRepo.findByCustomerNameContainingIgnoreCaseAndPaymentMethod(customerName, EnumUtils.getEnum(PaymentMethod.class, paymentType), pagingSort);
+            } else {
+                return null;
+            }
+            return getCarts(cartPage);
+        } else if(status != null && paymentType != null) {
+            if(EnumUtils.isValidEnum(OrderStatus.class, status) && EnumUtils.isValidEnum(PaymentMethod.class, paymentType)) {
+                cartPage = cartRepo.findByCustomerNameContainingIgnoreCaseAndPaymentMethodAndStatus(customerName, EnumUtils.getEnum(PaymentMethod.class, paymentType), EnumUtils.getEnum(OrderStatus.class, status),pagingSort);
+            } else {
+                return null;
+            }
+            return getCarts(cartPage);
+        }
+        else {
+            cartPage = cartRepo.findByCustomerNameContainingIgnoreCase(customerName, pagingSort);
+        }
+
+        return getCarts(cartPage);
     }
 
 

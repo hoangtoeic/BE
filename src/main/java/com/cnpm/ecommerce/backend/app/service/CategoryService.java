@@ -5,6 +5,7 @@ import com.cnpm.ecommerce.backend.app.dto.MessageResponse;
 import com.cnpm.ecommerce.backend.app.entity.Category;
 import com.cnpm.ecommerce.backend.app.exception.ResourceNotFoundException;
 import com.cnpm.ecommerce.backend.app.repository.CategoryRepository;
+import com.cnpm.ecommerce.backend.app.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +25,9 @@ public class CategoryService implements ICategoryService{
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     @Override
     public List<Category> findAll() {
@@ -101,7 +105,8 @@ public class CategoryService implements ICategoryService{
         Category theCategory = categoryRepository.findById(theId).orElseThrow(
                 () -> new ResourceNotFoundException("Not found category with ID=" + theId));
 
-        if(categoryRepository.count() > 0) {
+
+        if(productRepository.countProductsByCategoryId(theId) > 0) {
             return new MessageResponse("Can't delete category, just delete all product in this category", HttpStatus.BAD_REQUEST,
                     LocalDateTime.now());
         }

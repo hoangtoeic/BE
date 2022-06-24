@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,7 @@ public class CartItemAPI {
     private ICartItemService cartItemService;
 
     @GetMapping(value = { "", "/" })
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('CUSTOMER')")
     public ResponseEntity<?> findAll(@RequestParam(value = "id", required = false) Long id,
                                                   @RequestParam(value = "cartId", required = false) Long cartId,
                                                   @RequestParam(defaultValue = "0") int page,
@@ -53,12 +55,14 @@ public class CartItemAPI {
     }
 
     @GetMapping(value = { "/{cid}" })
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('CUSTOMER')")
     public ResponseEntity<CartItem> getCartItem(@PathVariable("cid") long id) {
         CartItem cartItem = cartItemService.findById(id);
         return new ResponseEntity<>(cartItem, HttpStatus.OK);
     }
 
     @PostMapping("")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<MessageResponse> createCartItem(@Valid @RequestBody CartItemDTO cartItemDto, BindingResult theBindingResult){
 
         if(theBindingResult.hasErrors()){
@@ -69,6 +73,7 @@ public class CartItemAPI {
         return new ResponseEntity<>(messageResponse, HttpStatus.CREATED);
     }
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<MessageResponse> updateCartItem(@PathVariable("id") long theId,
                                                           @Valid @RequestBody CartItemDTO cartItemDto, BindingResult bindingResult){
 
@@ -81,6 +86,7 @@ public class CartItemAPI {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
     public ResponseEntity<?> deleteCartItem(@PathVariable("id") long theId){
 
         cartItemService.deleteCartItem(theId);

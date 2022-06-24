@@ -10,6 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -70,6 +72,7 @@ public class ProductAPI {
     }
 
     @PostMapping("")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
     public ResponseEntity<MessageResponse> createProduct(@Valid @RequestBody ProductDTO theProductDto, BindingResult theBindingResult){
 
         if(theBindingResult.hasErrors()){
@@ -81,6 +84,7 @@ public class ProductAPI {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
     public ResponseEntity<MessageResponse> updateProduct(@PathVariable("id") Long theId,
                                                          @Valid @RequestBody ProductDTO theProductDto, BindingResult bindingResult){
 
@@ -93,6 +97,7 @@ public class ProductAPI {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
     public ResponseEntity<?> deleteProduct(@PathVariable("id") Long theId){
 
         productService.deleteProduct(theId);
@@ -108,5 +113,26 @@ public class ProductAPI {
     public ResponseEntity<?> countProductsByCategoryId(@PathVariable("categoryId") Long theCategoryId) {
         return new ResponseEntity<>(productService.countProductsByCategoryId(theCategoryId), HttpStatus.OK);
     }
+
+    @GetMapping("/recommendSystem/{id}")
+    @Transactional(timeout = 60)
+    public ResponseEntity<?> recommendProducts(
+                                      @PathVariable("id") Long userID,
+                                      @RequestParam(defaultValue = "0") int page,
+                                      @RequestParam(defaultValue = "10") int limit,
+                                      @RequestParam(defaultValue = "id,ASC") String[] sort){
+
+        try {
+            Pageable pagingSort = CommonUtils.sortItem(page, limit, sort);
+            Page<Product> productPage = null;
+            productPage = productService.recommendSystem(userID, pagingSort);
+
+            return new ResponseEntity<>(productPage, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
 
 }
