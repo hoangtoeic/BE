@@ -264,7 +264,7 @@ public class ProductService implements IProductService{
             try {
 
                 ResponseEntity<String> response = restTemplate.exchange(
-                        "https://flask-recommend-system-deploy.herokuapp.com/recommend", HttpMethod.POST, entity, String.class);
+                        "https://recommendsystem2023.herokuapp.com/recommendProduct", HttpMethod.POST, entity, String.class);
 
                 ObjectMapper objectMapper = new ObjectMapper();
                 recommendResponseObject responseObject = objectMapper.readValue(response.getBody(), recommendResponseObject.class);
@@ -284,6 +284,7 @@ public class ProductService implements IProductService{
 
             Pattern pattern = Pattern.compile("\\d+");
             Matcher matcher = pattern.matcher(productListTypeString);
+            System.out.println("matchermatcher:" + matcher);
 
             while (matcher.find()) {
                 list2.add(Long.parseLong(matcher.group())); // Add the value to the list
@@ -302,8 +303,11 @@ public class ProductService implements IProductService{
             System.out.println("list233" + list2);
         }
 
+        System.out.println("list2list2" + list2);
 
         Page<Product> productPage =  productRepository.findProductBylistID(list2, pagingSort);
+        System.out.println("productPageproductPage" + productPage);
+
         for(Product product : productPage.getContent()) {
             product.setThumbnail(Base64Utils.encodeToString(product.getThumbnailArr()));
         }
