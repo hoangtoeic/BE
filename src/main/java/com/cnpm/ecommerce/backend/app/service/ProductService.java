@@ -255,14 +255,13 @@ public class ProductService implements IProductService{
             System.out.println("exceptProductID" + exceptProductID);
 
             recommendRequestObject requestObject = new recommendRequestObject();
-            requestObject.setId(productID);
+            requestObject.setId(Math.toIntExact(userID));
             requestObject.setExceptProductID(exceptProductID);
             HttpHeaders headers = new HttpHeaders();
             headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
             HttpEntity<recommendRequestObject> entity = new HttpEntity<recommendRequestObject>(requestObject,headers);
 
             try {
-
                 ResponseEntity<String> response = restTemplate.exchange(
                         "https://recommendsystem2023.herokuapp.com/recommendProduct", HttpMethod.POST, entity, String.class);
 
